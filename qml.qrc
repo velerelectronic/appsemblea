@@ -1,0 +1,71 @@
+<RCC>
+    <qresource prefix="/">
+        <file>qml/main.qml</file>
+        <file>qml/BlocAssemblea.qml</file>
+        <file>qml/RecullPremsa.qml</file>
+        <file>qml/AgendaVerda.qml</file>
+        <file>qml/AloCamps.qml</file>
+        <file>qml/Formularis.qml</file>
+        <file>qml/EnConstruccio.qml</file>
+        <file>qml/ButtonBox.qml</file>
+        <file>qml/Directori.qml</file>
+        <file>qml/LoadingBox.qml</file>
+        <file>qml/CanalYoutube.qml</file>
+        <file>qml/FacebookAssemblea.qml</file>
+        <file>qml/ButlletiAssemblea.qml</file>
+        <file>qml/ABalearsVolem.qml</file>
+        <file>qml/RadioTaulaEducativa.qml</file>
+        <file>qml/DocenciaBalearTour.qml</file>
+        <file>qml/Portada.qml</file>
+        <file>qml/TitularView.qml</file>
+        <file>qml/Contactes.qml</file>
+        <file>qml/TwitterAssemblea.qml</file>
+        <file>qml/BibliotecaRecursos.qml</file>
+        <file>qml/Incidencies.qml</file>
+    </qresource>
+    <qresource prefix="/Imatges">
+        <file>imatges/agenda-152918.svg</file>
+        <file>imatges/ballpoint-147645.svg</file>
+        <file>imatges/Logo assemblea docents.png</file>
+        <file>imatges/newspaper-295480.svg</file>
+        <file>imatges/note-23618.svg</file>
+        <file>imatges/sign-40876.svg</file>
+        <file>imatges/red-31176.svg</file>
+        <file>imatges/cinema-154392.svg</file>
+        <file>imatges/mascot-48563.svg</file>
+        <file>imatges/letter-97861.svg</file>
+        <file>imatges/demonstrator-154201.svg</file>
+        <file>imatges/tower-36800.svg</file>
+        <file>imatges/school-bus-296824.svg</file>
+        <file>imatges/arrow-145769.svg</file>
+        <file>imatges/arrow-145766.svg</file>
+        <file>imatges/new-38743.svg</file>
+        <file>imatges/papers-308366.svg</file>
+        <file>imatges/flat-27140.svg</file>
+        <file>imatges/menu-145776.svg</file>
+        <file>imatges/icon-27951.svg</file>
+        <file>imatges/computer-31177.svg</file>
+        <file>imatges/pencil-160443.svg</file>
+        <file>imatges/copy-97584.svg</file>
+        <file>imatges/books-308785.svg</file>
+        <file>imatges/hand-157251.svg</file>
+    </qresource>
+    <qresource prefix="/Core">
+        <file>core/CachedModel.qml</file>
+        <file>core/Button.qml</file>
+        <file>core/UseUnits.qml</file>
+        <file>core/FeedView.qml</file>
+        <file>core/FeedDelegate.qml</file>
+        <file>core/SingleItemView.qml</file>
+        <file>core/ImageButton.qml</file>
+        <file>core/MainBar.qml</file>
+        <file>core/TweetModel.qml</file>
+        <file>core/DoublePanel.qml</file>
+    </qresource>
+    <qresource prefix="/Javascript">
+        <file>javascript/Storage.js</file>
+        <file>javascript/Dates.js</file>
+        <file>javascript/SecretStuff.js</file>
+        <file>javascript/Tweets.js</file>
+    </qresource>
+</RCC>
