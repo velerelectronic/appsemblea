@@ -1,0 +1,1 @@
+Una aplicació per mantenir informada l'Assemblea de Docents de les Illes Balears
