@@ -1,33 +1,47 @@
-/*
-    Appsemblea, an application to keep the assembly of teachers informed
-    Copyright (C) 2014 Joan Miquel Payeras Crespí
-
-    This file is part of Appsemblea
-
-    Appsemblea is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, version 3 of the License.
-
-    Appsemblea is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with this program.  If not, see <http://www.gnu.org/licenses/>.
-*/
-
 #include <QGuiApplication>
 #include <QQmlApplicationEngine>
 #include <QtQml>
-#include "qmlclipboardadapter.h"
+#include <QStandardPaths>
+#include <QDir>
+#include <QSqlDatabase>
+
+#include <QDebug>
+
+#include "ClipboardAdapter/qmlclipboardadapter.h"
+#include "DatabaseBackup/databasebackup.h"
+#include "SqlTableModel/sqltablemodel.h"
+
+// #include "ios/ioscalendar.h"
+
 
 int main(int argc, char *argv[])
 {
     QGuiApplication app(argc, argv);
 
     qmlRegisterType<QmlClipboardAdapter, 1>("tipuspersonals", 1, 0, "QClipboard");
+
+//    qmlRegisterType<IOSCalendar>("iosTypes", 1, 0, "IOSCalendar");
+
     QQmlApplicationEngine engine;
+
+    qmlRegisterType<DatabaseBackup>("PersonalTypes", 1, 0, "DatabaseBackup");
+    qmlRegisterType<SqlTableModel>("PersonalTypes", 1, 0, "SqlTableModel");
+
+    QString specificPath("Appsemblea");
+    QDir dir(QStandardPaths::writableLocation(QStandardPaths::CacheLocation));
+    qDebug() << dir;
+    if (!dir.exists(specificPath)) {
+        dir.mkdir(specificPath);
+    }
+
+    QSqlDatabase db;
+    if (dir.cd(specificPath)) {
+        db = QSqlDatabase::addDatabase("QSQLITE");
+        db.setDatabaseName(dir.absolutePath() + "/mainDatabase.sqlite");
+        if (db.open()) {
+            qDebug() << "OPENED";
+        }
+    }
 
     engine.load(QUrl(QStringLiteral("qrc:///qml/main.qml")));
 

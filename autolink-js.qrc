@@ -1,6 +1,5 @@
 <RCC>
     <qresource prefix="/">
         <file>autolink-js/autolink.js</file>
-        <file>qml/BibliotecaRecursos.qml</file>
     </qresource>
 </RCC>

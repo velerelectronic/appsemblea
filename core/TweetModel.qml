@@ -1,25 +1,8 @@
-/*
-    Appsemblea, an application to keep the assembly of teachers informed
-    Copyright (C) 2014 Joan Miquel Payeras Crespí
-
-    This file is part of Appsemblea
-
-    Appsemblea is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, version 3 of the License.
-
-    Appsemblea is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with this program.  If not, see <http://www.gnu.org/licenses/>.
-*/
-
 import QtQuick 2.2
 import 'qrc:///Javascript/javascript/SecretStuff.js' as SecretStuff
 import 'qrc:///autolink-js/autolink.js' as AutoLink
+// import 'qrc:///twitter-text-js/twitter-text-1.9.1.js' as Twitter
+// import 'qrc:///Javascript/javascript/Tweets.js' as Tweets
 
 ListModel {
     id: tweetsModel
@@ -46,6 +29,8 @@ ListModel {
     property var ids
     property int counter: 0
 
+    // Cached model properties
+
     function rellegeixTweets() {
         // tweets
         // wrapper
@@ -56,19 +41,22 @@ ListModel {
         req.onreadystatechange = function() {
             status = req.readyState;
             if (status === XMLHttpRequest.DONE) {
-                var objectArray = JSON.parse(req.responseText);
-                if (objectArray.errors !== undefined)
-                    console.log("Error agafant els tweets: " + objectArray.errors[0].message);
-                else {
-                    idx = new Array();
-                    for (var key in objectArray.statuses) {
-                        var jsonObject = objectArray.statuses[key];
-                        processTweet(jsonObject);
+                if (req.responseText) {
+                    var objectArray = JSON.parse(req.responseText);
+                    if (objectArray.errors !== undefined)
+                        console.log("Error agafant els tweets: " + objectArray.errors[0].message);
+                    else {
+                        tweetsModel.clear();
+                        idx = new Array();
+                        for (var key in objectArray.statuses) {
+                            var jsonObject = objectArray.statuses[key];
+                            processTweet(jsonObject);
+                        }
                     }
+                    if (wasLoading == true)
+                        tweetsModel.isLoaded()
+                    tweetsModel.onlineDataLoaded();
                 }
-                if (wasLoading == true)
-                    tweetsModel.isLoaded()
-                tweetsModel.onlineDataLoaded();
             }
             wasLoading = (status === XMLHttpRequest.LOADING);
         }
@@ -92,13 +80,15 @@ ListModel {
             authReq.setRequestHeader("Authorization", "Basic " + Qt.btoa(consumerKey + ":" + consumerSecret));
             authReq.onreadystatechange = function() {
                 if (authReq.readyState === XMLHttpRequest.DONE) {
-                    var jsonResponse = JSON.parse(authReq.responseText);
-                    if (jsonResponse.errors !== undefined)
-                        console.log("Error d'autenticació: " + jsonResponse.errors[0].message);
-                    else
-                        bearerToken = jsonResponse.access_token;
+                    if (authReq.responseText) {
+                        var jsonResponse = JSON.parse(authReq.responseText);
+                        if (jsonResponse.errors !== undefined)
+                            console.log("Error d'autenticació: " + jsonResponse.errors[0].message);
+                        else
+                            bearerToken = jsonResponse.access_token;
 
-                    tweetsModel.initDone();
+                        tweetsModel.initDone();
+                    }
                 }
             }
             authReq.send("grant_type=client_credentials");

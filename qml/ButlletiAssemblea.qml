@@ -1,22 +1,3 @@
-/*
-    Appsemblea, an application to keep the assembly of teachers informed
-    Copyright (C) 2014 Joan Miquel Payeras Crespí
-
-    This file is part of Appsemblea
-
-    Appsemblea is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, version 3 of the License.
-
-    Appsemblea is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with this program.  If not, see <http://www.gnu.org/licenses/>.
-*/
-
 import QtQuick 2.2
 import QtQuick.XmlListModel 2.0
 import 'qrc:///Javascript/javascript/Dates.js' as Dates
@@ -27,11 +8,8 @@ Core.FeedView {
 
     Core.UseUnits { id: units }
 
-    property bool working: feedModel.statusCache == XmlListModel.Loading
-
     titol: qsTr('Butlletí de notícies')
     model: feedModel
-    statusCache: feedModel.statusCache
     formatSectionDate: false
 
     feedDelegate: Core.FeedDelegate {
@@ -44,14 +22,30 @@ Core.FeedView {
         index: model.index
     }
 
+    detailFeedDelegate: Core.DetailFeedDelegate {
+        width: parent.parent.width
+        height: parent.height
+        titol: model.titol
+        contingut: '<p>' + descripcio + '</p><p><a href="' + urlAlternate + '">Accedeix al butlletí</a></p>'
+        enllac: urlAlternate
+        copiaContingut: descripcio
+    }
+
     Core.CachedModel {
-        id: feedModel
+        id: cachedModel
 
         source: 'http://us3.campaign-archive2.com/feed?u=6e03bb74776d556676a7d306b&id=0682381565'
-        query: '/rss/channel/item'
-        //namespaceDeclarations: "declare namespace content='http://purl.org/rss/1.0/modules/content/';"
         categoria: 'butlletiAssemblea'
         typeFiltra: false
+    }
+    statusCache: cachedModel.statusCache
+    lastUpdate: cachedModel.lastUpdate
+
+    XmlListModel {
+        id: feedModel
+        xml: cachedModel.contents
+        query: '/rss/channel/item'
+        //namespaceDeclarations: "declare namespace content='http://purl.org/rss/1.0/modules/content/';"
 
         XmlRole { name: 'titol'; query: 'title/string()' }
         XmlRole { name: 'descripcio'; query: 'title/string()' }
@@ -62,7 +56,7 @@ Core.FeedView {
 
     }
 
-    onReload: feedModel.llegeixOnline()
+    onReload: cachedModel.llegeixOnline()
 
     function converteixPlainText(cadena) {
         var linies = cadena.split('\n');

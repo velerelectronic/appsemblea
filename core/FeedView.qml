@@ -1,35 +1,16 @@
 /*
-    Appsemblea, an application to keep the assembly of teachers informed
-    Copyright (C) 2014 Joan Miquel Payeras Crespí
+  Llicències CC0
+  - Enrere: http://pixabay.com/es/men%C3%BA-rojo-brillante-ventana-145776/
+  - Actualitza: http://pixabay.com/es/equipo-verde-icono-s%C3%ADmbolo-flecha-31177/
+  - Llista: http://pixabay.com/es/plana-icono-propagaci%C3%B3n-frontera-27140/
+  - Botó anterior: http://pixabay.com/es/flecha-verde-brillante-izquierda-145769/
+  - Botó següent: http://pixabay.com/es/flecha-verde-brillante-derecho-145766/
+  - Obre extern: http://pixabay.com/es/nuevo-internet-abierta-web-38743/
+  - Menú extra: http://pixabay.com/es/icono-tema-acci%C3%B3n-barras-fila-27951/
+  - Ajuda: http://pixabay.com/es/questionmark-info-ayuda-308636/
+  */
 
-    This file is part of Appsemblea
-
-    Appsemblea is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, version 3 of the License.
-
-    Appsemblea is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with this program.  If not, see <http://www.gnu.org/licenses/>.
-*/
-/*
-    The following images belong to the public domain.
-
-    CC0 licenses
-    - Enrere: http://pixabay.com/es/men%C3%BA-rojo-brillante-ventana-145776/
-    - Actualitza: http://pixabay.com/es/equipo-verde-icono-s%C3%ADmbolo-flecha-31177/
-    - Llista: http://pixabay.com/es/plana-icono-propagaci%C3%B3n-frontera-27140/
-    - Botó anterior: http://pixabay.com/es/flecha-verde-brillante-izquierda-145769/
-    - Botó següent: http://pixabay.com/es/flecha-verde-brillante-derecho-145766/
-    - Obre extern: http://pixabay.com/es/nuevo-internet-abierta-web-38743/
-    - Menú extra: http://pixabay.com/es/icono-tema-acci%C3%B3n-barras-fila-27951/
-*/
-
-import QtQuick 2.2
+import QtQuick 2.3
 import QtQuick.Layouts 1.1
 import QtQuick.Dialogs 1.1
 import QtQuick.XmlListModel 2.0
@@ -43,9 +24,13 @@ Rectangle {
 
     Core.UseUnits { id: units }
 
+    signal showHelpPage()
+
     property string titol
     property var model
     property Component feedDelegate
+    property Component detailFeedDelegate
+
     property bool oneViewVisible: false
     property string loadingBoxState: ''
 
@@ -53,13 +38,18 @@ Rectangle {
     property int statusCache
     property bool formatSectionDate: false
     property bool showReloadButton: !oneViewVisible
-    property bool showListButton: oneViewVisible
-    property bool showPreviousButton: oneViewVisible
-    property bool showNextButton: oneViewVisible
+    // property bool showListButton: oneViewVisible
     property bool showExtraMenuButton: !doublePanel.canShowBothPanels()
+
+    property string lastUpdate: ''
+    property string homePage: ''
 
     signal goBack()
     signal reload()
+
+    signal shareFacebook
+    signal shareTwitter
+    signal shareGooglePlus
 
     onStatusCacheChanged: feedView.tradueixEstat(statusCache)
 
@@ -69,7 +59,17 @@ Rectangle {
         anchors.left: parent.left
         anchors.right: parent.right
         pageTitle: feedView.titol
-        onGoBack: feedView.goBack()
+        onGoBack: {
+            if (doublePanel.isShaded()) {
+                doublePanel.toggleSubPanel();
+            } else {
+                if (oneViewVisible) {
+                    oneViewVisible = false;
+                } else {
+                    feedView.goBack();
+                }
+            }
+        }
 
         Core.ImageButton {
             available: !oneViewVisible
@@ -78,6 +78,7 @@ Rectangle {
             onClicked: feedView.reload()
         }
 
+        /*
         Core.ImageButton {
             available: showListButton
             size: parent.height
@@ -86,23 +87,18 @@ Rectangle {
                 oneViewVisible = false;
             }
         }
-        Core.ImageButton {
-            id: previousButton
-            available: showPreviousButton
-            size: parent.height
-            image: 'arrow-145769'
-        }
-        Core.ImageButton {
-            id: nextButton
-            available: showNextButton
-            size: parent.height
-            image: 'arrow-145766'
-        }
+        */
         Core.ImageButton {
             available: showExtraMenuButton
             size: parent.height
             image: 'icon-27951'
             onClicked: doublePanel.toggleSubPanel()
+        }
+
+        Core.ImageButton {
+            size: parent.height
+            image: 'questionmark-308636'
+            onClicked: showHelpPage()
         }
     }
 
@@ -128,33 +124,31 @@ Rectangle {
             Component.onCompleted: console.log('Creat ara ' + (new Date()).toISOString());
 
             Connections {
-                target: previousButton
-                onClicked: mainPanel.goToPreviousItem()
-            }
-            Connections {
-                target: nextButton
-                onClicked: mainPanel.goToNextItem()
+                target: feedView
+                onShareFacebook: Qt.openUrlExternally('https://www.facebook.com/sharer/sharer.php?u=' + encodeURIComponent(singleItemList.currentItem.enllac))
+                onShareTwitter: Qt.openUrlExternally('http://twitter.com/intent/tweet?text=' + singleItemList.currentItem.titol + '%20' + encodeURIComponent(singleItemList.currentItem.enllac) + '&url=undefined')
+                onShareGooglePlus: Qt.openUrlExternally('https://plus.google.com/share?url=' + singleItemList.currentItem.enllac)
             }
 
             Connections {
                 target: doublePanel
-                onObreExtern: Qt.openUrlExternally(singleItem.enllac)
+                onObreExtern: Qt.openUrlExternally(singleItemList.currentItem.enllac)
                 onCopiaTitol: {
-                    clipboard.copia(singleItem.copiaTitol);
+                    clipboard.copia(singleItemList.currentItem.copiaTitol);
                     infoMessage.mostraInfo(qsTr("S'ha copiat el títol al portapapers."));
                 }
                 onCopiaContingut: {
-                    clipboard.copia(singleItem.copiaContingut);
+                    clipboard.copia(singleItemList.currentItem.copiaContingut);
                     infoMessage.mostraInfo(qsTr("S'han copiat els continguts al portapapers."));
                 }
                 onCopiaEnllac: {
-                    clipboard.copia(singleItem.copiaEnllac);
+                    clipboard.copia(singleItemList.currentItem.copiaEnllac);
                     infoMessage.mostraInfo(qsTr("S'ha copiat l'enllaç al portapapers."));
                 }
-                onEnviaMail: Qt.openUrlExternally('mailto:?subject=' + encodeURIComponent('[Appsemblea] ' +singleItem.titol) + '&body=' + encodeURIComponent(singleItem.enllac))
+                onEnviaMail: Qt.openUrlExternally('mailto:?subject=' + encodeURIComponent('[Appsemblea] ' +singleItemList.currentItem.titol) + '&body=' + encodeURIComponent(singleItemList.currentItem.enllac))
             }
 
-            ColumnLayout {
+            Item {
                 anchors.fill: parent
                 anchors.margins: units.nailUnit
 
@@ -163,19 +157,26 @@ Rectangle {
 
                 Qml.LoadingBox {
                     id: loadingBox
-                    Layout.fillWidth: true
-                    Layout.preferredHeight: height
+                    anchors.left: parent.left
+                    anchors.right: parent.right
+                    anchors.top: parent.top
+                    z: 2
                     state: loadingBoxState
-                    actualitzat: (typeof (model.lastUpdate) != 'undefined')?model.lastUpdate:''
+                    actualitzat: feedView.lastUpdate
                 }
 
                 ListView {
                     id: feedList
                     property bool mustUpdate: false
-                    property bool initialValue: true
 
                     Layout.fillHeight: true
-                    Layout.fillWidth: true
+                    anchors.left: parent.left
+                    anchors.right: parent.right
+                    anchors.top: parent.top
+                    anchors.topMargin: units.glanceUnit
+                    anchors.bottom: parent.bottom
+
+                    bottomMargin: doublePanel.globalMargins
 
                     z: 1
                     clip: true
@@ -207,18 +208,31 @@ Rectangle {
                             }
                         }
                     }
+                    footer: Rectangle {
+                        width: feedList.width
+                        height: childrenRect.height
+                        Text {
+                            anchors.left: parent.left
+                            anchors.right: parent.right
+                            anchors.top: parent.top
+                            height: contentHeight + units.fingerUnit
+                            horizontalAlignment: Text.AlignHCenter
+                            verticalAlignment: Text.AlignVCenter
+                            color: '#aaaaaa'
+                            text: qsTr('Hi ha ') + model.count + qsTr(' elements')
+                        }
+                    }
 
                     Component.onCompleted: {
                         currentIndex = -1;
-                        initialValue = false;
                     }
 
                     onCurrentIndexChanged: {
-                        if (!initialValue) {
-                            if (currentIndex>-1) {
-                                oneViewVisible = true;
-                            }
+                        if (currentIndex>-1) {
+                            oneViewVisible = true;
+                            singleItemList.positionViewAtIndex(currentIndex,ListView.Beginning);
                         }
+                        currentIndex = -1;
                     }
 
                     onContentYChanged: {
@@ -226,7 +240,10 @@ Rectangle {
                         case '':
                         case 'perfect':
                         case 'error':
+                        case 'timeout':
+                        case 'nodata':
                             // The view has not been dragged downwards yet
+
                             if ((contentY<0) && (draggingVertically)) {
                                 loadingBoxState = 'updateable';
                             }
@@ -251,173 +268,148 @@ Rectangle {
                     }
 
                     Rectangle {
-                        id: oneView
+                        id: oneViewList
                         anchors.fill: feedList
                         visible: oneViewVisible
-                        z: 3
-
-                        MouseArea {
+                        ListView {
+                            id: singleItemList
                             anchors.fill: parent
-                            preventStealing: true
-                            onPressed: mouse.accepted = true
-                        }
 
-                        ColumnLayout {
-                            anchors.fill: parent
-                            Rectangle {
-                                id: extraMenu
-                                states: [
-                                    State {
-                                        name: 'hidden'
-                                        PropertyChanges {
-                                            target: extraMenu
-                                            height: 0
-                                        }
-                                    },
-                                    State {
-                                        name: 'show'
-                                        PropertyChanges {
-                                            target: extraMenu
-                                            height: Math.round(units.fingerUnit * 1.5)
-                                        }
-                                    }
-                                ]
-
-                                state: 'hidden'
-                                radius: units.nailUnit
-                                color: '#60ff60'
-                                Layout.fillWidth: true
-                                Layout.preferredHeight: height
-                                clip: true
-
-                            }
-
-                            SingleItemView {
-                                id: singleItem
-                                Layout.fillWidth: true
-                                Layout.fillHeight: true
-                                onVisibleChanged: if (visible == false) feedList.currentIndex = -1;
-
-                                titol: (feedList.currentIndex>-1)?feedList.currentItem.textTitol:''
-                                continguts: (feedList.currentIndex>-1)?feedList.currentItem.textContingut:''
-                                enllac: (feedList.currentIndex>-1)?feedList.currentItem.enllac:''
-                                copiaTitol: (feedList.currentIndex>-1)?feedList.currentItem.copiaTitol:''
-                                copiaContingut: (feedList.currentIndex>-1)?feedList.currentItem.copiaContingut:''
-                                copiaEnllac: (feedList.currentIndex>-1)?feedList.currentItem.copiaEnllac:''
-                            }
+                            model: feedView.model
+                            orientation: ListView.Horizontal
+                            snapMode: ListView.SnapOneItem
+                            spacing: units.fingerUnit
+                            highlightFollowsCurrentItem: true
+                            highlightRangeMode: ListView.StrictlyEnforceRange
+                            onCurrentIndexChanged: {console.log(currentIndex) }
+                            delegate: feedView.detailFeedDelegate
                         }
                     }
-
                 }
-            }
-            function goToPreviousItem() {
-                feedList.decrementCurrentIndex();
-                singleItem.situaAlPrincipi();
-            }
-
-            function goToNextItem() {
-                feedList.incrementCurrentIndex();
-                singleItem.situaAlPrincipi();
             }
 
             function openExternally() {
-                Qt.openUrlExternally(singleItem.enllac);
+                Qt.openUrlExternally(singleItemList.currentItem.enllac);
             }
         }
 
-        itemSubPanel: Flickable {
-            contentWidth: parent.width
-            contentHeight: buttonsRow.height
-            boundsBehavior: Flickable.StopAtBounds
+        itemSubPanel: ListView {
+            id: buttonsRow
+
             clip: true
+            spacing: units.fingerUnit
+            boundsBehavior: Flickable.StopAtBounds
+            model: (feedView.oneViewVisible)?modelForItem:modelForList
+            topMargin: doublePanel.globalMargins
+            bottomMargin: doublePanel.globalMargins
 
-            Item {
-                id: buttonsRow
-                width: parent.width
-                height: buttonsLayout.height + 2*units.nailUnit
+            VisualItemModel {
+                id: modelForList
+                Core.Button {
+                    id: homePageButton
+                    width: buttonsRow.width
+                    color: 'white'
+                    text: qsTr('Obre extern')
+                    onClicked: Qt.openUrlExternally(homePage)
+                    visible: (homePage != '')
+                }
 
-                ColumnLayout {
-                    id: buttonsLayout
-                    anchors.left: parent.left
-                    anchors.right: parent.right
-                    anchors.top: parent.top
-                    anchors.margins: units.nailUnit
-                    height: childrenRect.height
-                    spacing: units.fingerUnit
-
-                    Text {
-                        id: textExplicatiu
-                        visible: !oneViewVisible
-                        font.pixelSize: units.readUnit
-                        text: qsTr('Selecciona un element de la llista per veure en aquesta barra les opcions disponibles.')
-                        wrapMode: Text.WrapAtWordBoundaryOrAnywhere
-                        Layout.preferredHeight: (visible)?contentHeight:0
-                        Layout.fillWidth: visible
-                        Layout.alignment: Qt.AlignTop
-                    }
-
-                    /*
-                    Core.Button {
-                        id: botoObreCalendari
-                        Layout.preferredWidth: parent.width
-                        Layout.preferredHeight: units.fingerUnit
-                        available: true
-                        color: 'white'
-                        text: qsTr('Calendari')
-                        onClicked: Qt.openUrlExternally('calshow://')
-                    }
-                    */
-
-                    Core.Button {
-                        id: botoObreExtern
-                        Layout.preferredWidth: parent.width
-                        Layout.preferredHeight: units.fingerUnit
-                        available: oneViewVisible
-                        color: 'white'
-                        text: qsTr('Obre extern')
-                        onClicked: doublePanel.obreExtern()
-                    }
-
-                    Core.Button {
-                        id: botoCopiaTitol
-                        Layout.preferredWidth: parent.width
-                        Layout.preferredHeight: units.fingerUnit
-                        available: oneViewVisible
-                        color: 'white'
-                        text: qsTr('Copia títol')
-                        onClicked: doublePanel.copiaTitol()
-                    }
-                    Core.Button {
-                        id: botoCopiaContingut
-                        Layout.preferredWidth: parent.width
-                        Layout.preferredHeight: units.fingerUnit
-                        available: oneViewVisible
-                        color: 'white'
-                        text: qsTr('Copia contingut')
-                        onClicked: doublePanel.copiaContingut()
-                    }
-                    Core.Button {
-                        id: botoCopiaEnllac
-                        Layout.preferredWidth: parent.width
-                        Layout.preferredHeight: units.fingerUnit
-                        available: oneViewVisible
-                        color: 'white'
-                        text: qsTr('Copia enllaç')
-                        onClicked: doublePanel.copiaEnllac()
-                    }
-                    Core.Button {
-                        id: botoEnviaMail
-                        Layout.preferredWidth: parent.width
-                        Layout.preferredHeight: units.fingerUnit
-                        available: oneViewVisible
-                        color: 'white'
-                        text: qsTr('Envia per correu')
-                        onClicked: doublePanel.enviaMail()
-                    }
+                Text {
+                    id: textExplicatiu
+                    font.pixelSize: units.readUnit
+                    text: qsTr('Selecciona un element de la llista per veure en aquesta barra les opcions disponibles.')
+                    wrapMode: Text.WrapAtWordBoundaryOrAnywhere
+                    height: contentHeight
+                    width: buttonsRow.width
+                    Layout.alignment: Qt.AlignTop
                 }
             }
+
+            VisualItemModel {
+                id: modelForItem
+
+                /*
+                Core.Button {
+                    id: botoObreCalendari
+                    Layout.preferredWidth: parent.width
+                    Layout.preferredHeight: units.fingerUnit
+                    available: true
+                    color: 'white'
+                    text: qsTr('Calendari')
+                    onClicked: Qt.openUrlExternally('calshow://')
+                }
+                */
+
+                Button {
+                    id: shareFB
+                    width: buttonsRow.width
+                    color: '#0040FF'
+                    textColor: 'white'
+                    text: qsTr('Facebook')
+                    onClicked: feedView.shareFacebook()
+                }
+                Button {
+                    id: shareTwitter
+                    width: buttonsRow.width
+                    color: '#2ECCFA'
+                    text: qsTr('Twitter')
+                    onClicked: feedView.shareTwitter()
+                }
+                Button {
+                    id: shareGPlus
+                    width: buttonsRow.width
+                    color: '#FE2E2E'
+                    textColor: 'white'
+                    text: qsTr('Google Plus')
+                    onClicked: feedView.shareGooglePlus()
+                }
+
+                Core.Button {
+                    id: botoObreExtern
+                    width: buttonsRow.width
+                    available: oneViewVisible
+                    color: 'white'
+                    text: qsTr('Obre extern')
+                    onClicked: doublePanel.obreExtern()
+                }
+
+                Core.Button {
+                    id: botoCopiaTitol
+                    width: buttonsRow.width
+                    available: oneViewVisible
+                    color: 'white'
+                    text: qsTr('Copia títol')
+                    onClicked: doublePanel.copiaTitol()
+                }
+                Core.Button {
+                    id: botoCopiaContingut
+                    width: buttonsRow.width
+                    available: oneViewVisible
+                    color: 'white'
+                    text: qsTr('Copia contingut')
+                    onClicked: doublePanel.copiaContingut()
+                }
+                Core.Button {
+                    id: botoCopiaEnllac
+                    width: buttonsRow.width
+                    available: oneViewVisible
+                    color: 'white'
+                    text: qsTr('Copia enllaç')
+                    onClicked: doublePanel.copiaEnllac()
+                }
+                Core.Button {
+                    id: botoEnviaMail
+                    width: buttonsRow.width
+                    available: oneViewVisible
+                    color: 'white'
+                    text: qsTr('Envia per correu')
+                    onClicked: doublePanel.enviaMail()
+                }
+            }
+
         }
     }
+
 
 
     Component {
@@ -445,7 +437,7 @@ Rectangle {
     function tradueixEstat(estat) {
         switch(estat) {
         case XmlListModel.Null:
-            loadingBoxState = '';
+            loadingBoxState = 'nodata';
             break;
         case XmlListModel.Loading:
             loadingBoxState = 'loading';
@@ -457,10 +449,18 @@ Rectangle {
             loadingBoxState = 'error';
             break;
         default:
-            loadingBoxState = '';
+            loadingBoxState = 'nodata';
             break;
         }
     }
 
+    function getHelpText() {
+        return "<p>Llisca el dit sobre la pantalla! Els gestos et permeten fer una navegació molt més fàcil i ràpida.</p>
+        <ul><li>A la llista de titulars, toca amb el dit sobre qualsevol titular per mostrar tots els seus continguts.</li>
+        <li>Arrossega la llista cap avall i deixa-la anar per poder actualitzar-la amb nova informació d'internet.</li>
+        </ul>
+        <p>Han desaparegut els botons per passar a la notícia següent o l'anterior. Però ara pots fer el canvi d'una altra manera.</p>
+        <p>Quan es mostrin els continguts, llisca el dit sobre el text cap a l'esquerra per passar al titular següent o cap a la dreta per passar a l'anterior.</p>";
+    }
 }
 

@@ -1,22 +1,3 @@
-/*
-    Appsemblea, an application to keep the assembly of teachers informed
-    Copyright (C) 2014 Joan Miquel Payeras Crespí
-
-    This file is part of Appsemblea
-
-    Appsemblea is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, version 3 of the License.
-
-    Appsemblea is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with this program.  If not, see <http://www.gnu.org/licenses/>.
-*/
-
 import QtQuick 2.2
 import QtQuick.XmlListModel 2.0
 import 'qrc:///Javascript/javascript/Dates.js' as Dates
@@ -27,11 +8,9 @@ Core.FeedView {
 
     Core.UseUnits { id: units }
 
-    property bool working: feedModel.statusCache == XmlListModel.Loading
-
     titol: qsTr('Vídeos de l\'assemblea')
+    homePage: 'https://www.youtube.com/channel/UCMIw7tVRqjlfnGJrzQgkA5w/'
     model: feedModel
-    statusCache: feedModel.statusCache
     formatSectionDate: true
 
     feedDelegate: Core.FeedDelegate {
@@ -43,13 +22,28 @@ Core.FeedView {
         index: model.index
     }
 
+    detailFeedDelegate: Core.DetailFeedDelegate {
+        width: parent.parent.width
+        height: parent.height
+        titol: model.titol
+        contingut:  '<p>' + model.contingut + '</p><img src="' + thumbnail + '" href="' + urlAlternate + '"></img><p><a href="' + urlAlternate + '">Obre el vídeo</a></p>'
+        enllac: urlAlternate
+    }
+
     Core.CachedModel {
-        id: feedModel
+        id: cachedModel
         source: 'https://gdata.youtube.com/feeds/api/users/assembleadocentsib/uploads'
-        query: '/feed/entry'
-        namespaceDeclarations: "declare default element namespace 'http://www.w3.org/2005/Atom'; declare namespace media='http://search.yahoo.com/mrss/';"
         categoria: 'youtubeAssemblea'
         typeFiltra: false
+    }
+    statusCache: cachedModel.statusCache
+    lastUpdate: cachedModel.lastUpdate
+
+    XmlListModel {
+        id: feedModel
+        xml: cachedModel.contents
+        query: '/feed/entry'
+        namespaceDeclarations: "declare default element namespace 'http://www.w3.org/2005/Atom'; declare namespace media='http://search.yahoo.com/mrss/';"
 
         XmlRole { name: 'titol'; query: 'title/string()' }
         XmlRole { name: 'contingut'; query: 'content/string()' }
@@ -61,5 +55,5 @@ Core.FeedView {
         XmlRole { name: 'urlAlternate'; query: "link[@rel='alternate']/@href/string()" }
     }
 
-    onReload: feedModel.llegeixOnline()
+    onReload: cachedModel.llegeixOnline()
 }

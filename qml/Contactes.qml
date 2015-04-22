@@ -1,28 +1,8 @@
 /*
-    Appsemblea, an application to keep the assembly of teachers informed
-    Copyright (C) 2014 Joan Miquel Payeras Crespí
-
-    This file is part of Appsemblea
-
-    Appsemblea is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, version 3 of the License.
-
-    Appsemblea is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with this program.  If not, see <http://www.gnu.org/licenses/>.
-*/
-/*
-    The following images belong to the public domain:
-
-    CC0 licenses:
-    - Enviar mail: http://pixabay.com/es/l%C3%A1piz-pluma-editar-bloc-de-notas-160443/
-    - Copiar mail: http://pixabay.com/es/copia-documentos-p%C3%A1ginas-97584/
-*/
+  Llicències CC0:
+  - Enviar mail: http://pixabay.com/es/l%C3%A1piz-pluma-editar-bloc-de-notas-160443/
+  - Copiar mail: http://pixabay.com/es/copia-documentos-p%C3%A1ginas-97584/
+  */
 
 import QtQuick 2.2
 import QtQuick.Layouts 1.1
@@ -64,42 +44,59 @@ Rectangle {
         delegate: Rectangle {
             property int globalMargins: units.fluentMargins(parent.width,units.nailUnit)
             border.color: 'black'
-            height: Math.max(2 * units.fingerUnit,2 * globalMargins,sectionName.contentHeight + 2 * globalMargins,sectionMail.contentHeight + 2 * globalMargins)
+            height: rowContacts.height + globalMargins * 2
             width: parent.width
 
             RowLayout {
                 id: rowContacts
-                anchors.fill: parent
+                anchors.top: parent.top
+                anchors.left: parent.left
+                anchors.right: parent.right
+                height: Math.max(units.fingerUnit * 2, info.height)
                 anchors.margins: globalMargins
                 spacing: globalMargins
-                Text {
-                    id: sectionName
-                    Layout.preferredWidth: Math.round(parent.width / 3)
-                    Layout.fillHeight: true
-                    verticalAlignment: Text.AlignVCenter
-                    wrapMode: Text.WrapAtWordBoundaryOrAnywhere
-                    font.pixelSize: units.readUnit
-                    font.bold: model.section
-                    text: model.title
+                Item {
+                    id: info
+                    property bool arrangeHorizontal: (units.fingerUnit*5 < width/2)
+                    Layout.fillWidth: true
+                    Layout.preferredHeight: height
+                    height: (info.arrangeHorizontal)?(Math.max(sectionName.implicitHeight,sectionMail.contentHeight)):(sectionName.height+sectionMail.height)
+                    Text {
+                        id: sectionName
+                        anchors.top: parent.top
+                        anchors.left: parent.left
+                        anchors.right: (info.arrangeHorizontal)?sectionMail.left:parent.right
+                        height: contentHeight
+                        verticalAlignment: Text.AlignVCenter
+                        wrapMode: Text.WrapAtWordBoundaryOrAnywhere
+                        font.pixelSize: units.readUnit
+                        font.bold: model.section
+                        text: model.title
+                    }
+                    Text {
+                        id: sectionMail
+                        anchors.right: parent.right
+                        anchors.top: (info.arrangeHorizontal)?parent.top:sectionName.bottom
+                        width: (info.arrangeHorizontal)?(parent.width/2):undefined
+                        height: contentHeight
+                        anchors.left: (info.arrangeHorizontal)?undefined:parent.left
+                        horizontalAlignment: Text.AlignLeft
+                        verticalAlignment: Text.AlignVCenter
+                        wrapMode: Text.WrapAtWordBoundaryOrAnywhere
+                        font.pixelSize: units.readUnit
+                        text: (model.section)?'':model.email
+                    }
                 }
-                Text {
-                    id: sectionMail
-                    Layout.fillWidth: !model.section
-                    Layout.preferredHeight: contentHeight
-                    Layout.fillHeight: true
-                    horizontalAlignment: Text.AlignLeft
-                    verticalAlignment: Text.AlignVCenter
-                    wrapMode: Text.WrapAtWordBoundaryOrAnywhere
-                    font.pixelSize: units.readUnit
-                    text: (model.section)?'':model.email
-                }
+
                 Core.ImageButton {
+                    Layout.alignment: Qt.AlignVCenter
                     image: 'pencil-160443'
                     size: units.fingerUnit
                     onClicked: Qt.openUrlExternally('mailto:"' + encodeURIComponent(model.title) + '" <' + model.email + '>' + '?subject=' + encodeURIComponent('[Appsemblea] Propostes o preguntes'));
                 }
 
                 Core.ImageButton {
+                    Layout.alignment: Qt.AlignVCenter
                     image: 'copy-97584'
                     size: units.fingerUnit
                     onClicked: {
@@ -133,9 +130,9 @@ Rectangle {
         contactModel.append({section: false, title: qsTr('CAIXA RESISTÈNCIA'), email: 'caixaderesistencia@gmail.com'});
         contactModel.append({section: false, title: qsTr('ESTRATÈGIES'), email: 'comiteestrategiesad@gmail.com'});
         contactModel.append({section: false, title: qsTr('AFERS EXTERIORS'), email: 'afersexteriorsad@gmail.com'});
-        contactModel.append({section: false, title: qsTr('AGENDA VERDA 1'), email: 'iniciatives@agendaverdadocents.cat'});
-        contactModel.append({section: false, title: qsTr('AGENDA VERDA 2'), email: 'sospubliceducation@gmail.com'});
+        contactModel.append({section: false, title: qsTr('AGENDA VERDA'), email: 'agendaverda@gmail.com'});
         contactModel.append({section: false, title: qsTr('ASSEMBLEA DOCENTS DESCONCERTATS'), email: 'assembleadocentsdesconcertats@autistici.org'});
+        contactModel.append({section: false, title: qsTr('COMISSIÓ JURÍDICA'), email: 'comissiojuridicaad@gmail.com'});
         contactModel.append({section: false, title: qsTr('DESENVOLUPAMENT APPSEMBLEA'), email: 'developerjmpc@gmail.com'});
     }
 }

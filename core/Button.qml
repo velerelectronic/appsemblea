@@ -1,22 +1,3 @@
-/*
-    Appsemblea, an application to keep the assembly of teachers informed
-    Copyright (C) 2014 Joan Miquel Payeras Crespí
-
-    This file is part of Appsemblea
-
-    Appsemblea is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, version 3 of the License.
-
-    Appsemblea is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with this program.  If not, see <http://www.gnu.org/licenses/>.
-*/
-
 import QtQuick 2.2
 import QtGraphicalEffects 1.0
 
@@ -25,8 +6,9 @@ Item {
     signal clicked
 
     property alias text: continguts.text
+    property alias textColor: continguts.color
     property alias fontSize: continguts.font.pixelSize
-    property alias color: buttonRect.color
+    property string color: 'yellow'
     property bool available: true
 
     height: (available)?units.fingerUnit:0
@@ -40,12 +22,20 @@ Item {
                 target: buttonShadow
                 glowRadius: Math.round(units.nailUnit / 2)
             }
+            PropertyChanges {
+                target: buttonRect
+                color: button.color
+            }
         },
         State {
             name: 'pressing'
             PropertyChanges {
                 target: buttonShadow
                 glowRadius: Math.round(units.nailUnit / 4)
+            }
+            PropertyChanges {
+                target: buttonRect
+                color: '#eeeeee'
             }
         },
 
@@ -55,8 +45,13 @@ Item {
                 target: buttonShadow
                 glowRadius: units.nailUnit
             }
+            PropertyChanges {
+                target: buttonRect
+                color: '#eeeeee'
+            }
         }
     ]
+
     state: ''
     transitions: [
         Transition {
@@ -66,7 +61,15 @@ Item {
                 easing.type: Easing.InOutQuad
                 duration: 200
             }
+        },
+        Transition {
+            PropertyAnimation {
+                target: buttonRect
+                properties: 'color'
+                duration: 200
+            }
         }
+
     ]
 
     RectangularGlow {
@@ -83,7 +86,7 @@ Item {
         anchors.fill: parent
         anchors.margins: Math.round(units.nailUnit / 2)
 
-        color: 'gray'
+        color: button.color
         radius: units.nailUnit
 
         Text {
@@ -92,6 +95,7 @@ Item {
             font.pixelSize: units.readUnit
             verticalAlignment: Text.AlignVCenter
             horizontalAlignment: Text.AlignHCenter
+            wrapMode: Text.WrapAtWordBoundaryOrAnywhere
         }
         MouseArea {
             anchors.fill: parent
@@ -100,12 +104,14 @@ Item {
             onClicked: {
                 button.state = 'pressed';
                 button.clicked();
-                button.state = '';
             }
             onExited: button.state = ''
             onCanceled: button.state = ''
         }
     }
 
+    function returnToNormalState() {
+        button.state = '';
+    }
 }
 

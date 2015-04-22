@@ -1,0 +1,6 @@
+<RCC>
+    <qresource prefix="/">
+        <file>twitter-text-js/twitter-text-1.9.1.js</file>
+        <file>twitter-text-js/LICENSE.txt</file>
+    </qresource>
+</RCC>

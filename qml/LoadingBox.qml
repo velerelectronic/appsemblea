@@ -1,29 +1,10 @@
-/*
-    Appsemblea, an application to keep the assembly of teachers informed
-    Copyright (C) 2014 Joan Miquel Payeras Crespí
-
-    This file is part of Appsemblea
-
-    Appsemblea is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, version 3 of the License.
-
-    Appsemblea is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with this program.  If not, see <http://www.gnu.org/licenses/>.
-*/
-
 import QtQuick 2.2
 
 Rectangle {
     id: loadingBox
 
     property string actualitzat
-    height: textContents.height
+    height: textContents.height + 2 * units.nailUnit
 
     state: 'loading'
     states: [
@@ -32,7 +13,6 @@ Rectangle {
             PropertyChanges {
                 target: loadingBox
                 color: 'yellow'
-                height: units.fingerUnit
             }
             PropertyChanges {
                 target: textContents
@@ -40,13 +20,16 @@ Rectangle {
                 font.pixelSize: units.readUnit
                 text: qsTr('Actualitzant...')
             }
+            PropertyChanges {
+                target: timeout
+                running: true
+            }
         },
         State {
             name: 'perfect'
             PropertyChanges {
                 target: loadingBox
                 color: 'white'
-                height: units.readUnit
             }
             PropertyChanges {
                 target: textContents
@@ -54,13 +37,16 @@ Rectangle {
                 font.pixelSize: units.smallReadUnit
                 text: qsTr('Actualitzat ') + loadingBox.actualitzat
             }
+            PropertyChanges {
+                target: timeout
+                running: false
+            }
         },
         State {
             name: 'updateable'
             PropertyChanges {
                 target: loadingBox
                 color: 'white'
-                height: units.readUnit
             }
             PropertyChanges {
                 target: textContents
@@ -68,7 +54,34 @@ Rectangle {
                 font.pixelSize: units.glanceUnit
                 text: qsTr('Estira cap avall per actualitzar.')
             }
+        },
+        State {
+            name: 'timeout'
+            PropertyChanges {
+                target: loadingBox
+                color: 'white'
+            }
+            PropertyChanges {
+                target: textContents
+                color: 'red'
+                font.pixelSize: units.glanceUnit
+                text: qsTr("Temps d'espera sobrepassat. Torna a intentar-ho.")
+            }
+        },
+        State {
+            name: 'nodata'
+            PropertyChanges {
+                target: loadingBox
+                color: 'white'
+            }
+            PropertyChanges {
+                target: textContents
+                color: 'red'
+                font.pixelSize: units.glanceUnit
+                text: qsTr("No s'han rebut dades.")
+            }
         }
+
     ]
 
     Text {
@@ -76,9 +89,17 @@ Rectangle {
         anchors.left: parent.left
         anchors.right: parent.right
         anchors.top: parent.top
-        height: contentHeight
+        anchors.margins: units.nailUnit
+        height: implicitHeight
         wrapMode: Text.WrapAtWordBoundaryOrAnywhere
         horizontalAlignment: Text.AlignHCenter
         verticalAlignment: Text.AlignVCenter
+    }
+
+    Timer {
+        id: timeout
+        interval: 30 * 1000
+
+        onTriggered: loadingBox.state = 'timeout'
     }
 }

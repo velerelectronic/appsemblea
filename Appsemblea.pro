@@ -3,15 +3,17 @@ TEMPLATE = app
 QT += qml quick sql xml xmlpatterns svg
 # QTPLUGIN += qtquick2plugin
 
-SOURCES += main.cpp
+SOURCES += main.cpp \
+    DatabaseBackup/databasebackup.cpp \
+    SqlTableModel/sqltablemodel.cpp
 
 #OBJECTIVE_SOURCES += \
 #    ios/ioscalendar.mm
 
 RESOURCES += \
-    qml.qrc \
     autolink-js.qrc \
-    twitter-text-js.qrc
+    twitter-text-js.qrc \
+    qml.qrc
 
 # Additional import path used to resolve QML modules in Qt Creator's code model
 QML_IMPORT_PATH =
@@ -22,10 +24,14 @@ include(deployment.pri)
 OTHER_FILES += \
     android/AndroidManifest.xml \
     twitter-text-js/LICENSE.txt \
-    ios/Info.plist
+    ios/Info.plist \
+    LICENSE
 
 HEADERS += \
-    qmlclipboardadapter.h
+    qmlclipboardadapter.h \
+    DatabaseBackup/databasebackup.h \
+    SqlTableModel/sqltablemodel.h \
+    ClipboardAdapter/qmlclipboardadapter.h
 
 ANDROID_PACKAGE_SOURCE_DIR = $$PWD/android
 

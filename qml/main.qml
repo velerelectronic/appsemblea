@@ -1,28 +1,9 @@
-/*
-    Appsemblea, an application to keep the assembly of teachers informed
-    Copyright (C) 2014 Joan Miquel Payeras Crespí
-
-    This file is part of Appsemblea
-
-    Appsemblea is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, version 3 of the License.
-
-    Appsemblea is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with this program.  If not, see <http://www.gnu.org/licenses/>.
-*/
-
 import QtQuick 2.2
 import QtQuick.Window 2.1
 import QtQuick.Layouts 1.1
+import QtQuick.Controls 1.3
+import PersonalTypes 1.0
 import 'qrc:///Core/core' as Core
-import 'qrc:///Javascript/javascript/Storage.js' as Storage
-
 
 Window {
     id: mainWindow
@@ -34,7 +15,11 @@ Window {
     property string paginaInicial: 'Portada'
     property int midaMainBar: Math.round(units.fingerUnit * 1.5)
     property bool showMainBar: false
-    property var navegacio: []
+//    property var navegacio: []
+
+    DatabaseBackup {
+        id: dbBk
+    }
 
     Rectangle {
         id: rectWindow
@@ -56,7 +41,7 @@ Window {
                 }
             }
         ]
-        state: 'inicial'
+        state: 'complet'
 
         transitions: [
             Transition {
@@ -71,7 +56,7 @@ Window {
         Keys.onPressed: {
             if (event.key == Qt.Key_Back) {
                 event.accepted = true;
-                obrePaginaInicial();
+                stack.pop();
             }
         }
 
@@ -79,34 +64,44 @@ Window {
             id: units
         }
 
-        Item {
-            id: espaiPagines
+        Image {
+            id: imatgeFons
             anchors.fill: parent
+            anchors.topMargin: units.fingerUnit + 2 * units.nailUnit
+            source: 'qrc:///Imatges/imatges/Logo assemblea docents.png'
+            fillMode: Image.PreserveAspectFit
+            smooth: true
+            opacity: 0.5
+        }
 
-            // Tenim dos carregadors de pàgines per fer més fluïts els canvis de pàgina
+        StackView {
+            id: stack
+            anchors.fill: parent
+            initialItem: Qt.resolvedUrl('Portada.qml')
 
-            Loader {
-                id: pageLoader
-                anchors.fill: parent
-                z: 2
-
-                onWidthChanged: (progressAnimation.running)?progressAnimation.restart():false
-                onLoaded: {
+            Stack.onStatusChanged: {
+                if (Stack.status == Stack.Active) {
                     rectWindow.state = 'complet';
-
-                    if (typeof(pageLoader.item.showMainBar) != 'undefined')
-                        showMainBar = pageLoader.item.showMainBar;
+                    progressAnimation.stop();
+                    if (typeof(stack.currentItem.showMainBar) != 'undefined')
+                        showMainBar = stack.currentItem.showMainBar;
                     else
                         showMainBar = true;
+                } else {
+                    progressAnimation.restart();
                 }
-                Connections {
-                    ignoreUnknownSignals: true
-                    target: pageLoader.item
-                    onObrePagina: obrePagina(pagina,opcions)
-                    onGoBack: obrePaginaEnrere()
-                    onWorkingChanged: (pageLoader.item.working)?progressAnimation.restart():progressAnimation.stop()
+            }
+
+            Connections {
+                target: stack.currentItem
+                ignoreUnknownSignals: true
+                onObrePagina: obrePagina(pagina,opcions)
+                onGoBack: stack.pop()
+//                onWorkingChanged: (pageLoader.item.working)?progressAnimation.restart():progressAnimation.stop()
+                onShowHelpPage: {
+                    mainHelpText.text = stack.currentItem.getHelpText();
+                    helpBox.state = 'show';
                 }
-                Component.onCompleted: obrePaginaInicial()
             }
         }
 
@@ -114,8 +109,8 @@ Window {
             // Barra de progrés que es mostra quan es carreguen les pàgines
             z: 3
             id: progress
-            anchors.top: espaiPagines.top
-            anchors.horizontalCenter: espaiPagines.horizontalCenter
+            anchors.top: stack.top
+            anchors.horizontalCenter: stack.horizontalCenter
             anchors.margins: 0
             color: 'green'
             height: units.nailUnit
@@ -129,31 +124,75 @@ Window {
                 running: false
                 loops: Animation.Infinite
                 from: 0
-                to: espaiPagines.width + 2 * units.nailUnit
+                to: stack.width + 2 * units.nailUnit
                 duration: 1000
             }
         }
     }
 
-    function obrePagina(pagina,opcions) {
-        navegacio.push({pagina: pagina,opcions:opcions});
-        pageLoader.setSource(pagina + '.qml', opcions);
-    }
+    Core.SuperposedBox {
+        id: helpBox
+        anchors.fill: rectWindow
 
-    function obrePaginaInicial() {
-        obrePagina(paginaInicial,{});
-    }
+        innerWidget: Rectangle {
+            border {
+                color: 'green'
+                width: units.nailUnit
+            }
+            anchors.centerIn: parent
+            width: parent.width * 0.66
+            height: parent.height * 0.66
+            ColumnLayout {
+                anchors.fill: parent
+                anchors.margins: units.fingerUnit
+                Text {
+                    Layout.fillWidth: true
+                    Layout.preferredHeight: contentHeight
+                    font.pixelSize: units.glanceUnit
+                    font.bold: true
+                    wrapMode: Text.WordWrap
+                    horizontalAlignment: Text.AlignHCenter
+                    text: qsTr('Ajuda')
+                }
 
-    function obrePaginaEnrere() {
-        if (navegacio.length>1) {
-            navegacio.pop();
-            var anterior = navegacio.pop();
-            obrePagina(anterior.pagina,anterior.opcions);
+                Flickable {
+                    Layout.fillWidth: true
+                    Layout.fillHeight: true
+                    clip: true
+                    contentWidth: width
+                    contentHeight: mainHelpText.height
+                    Text {
+                        id: mainHelpText
+                        width: parent.width
+                        height: contentHeight
+                        textFormat: Text.RichText
+                        font.pixelSize: units.readUnit
+                        wrapMode: Text.WordWrap
+                    }
+                }
+
+                Core.Button {
+                    Layout.fillWidth: true
+                    color: '#55FF55'
+                    text: qsTr("Entesos!")
+                    onClicked: helpBox.closeRequested()
+                }
+            }
         }
+
+        onCloseRequested: {
+            console.log('Tancam')
+            helpBox.state = 'hide'
+        }
+    }
+
+    function obrePagina(pagina,opcions) {
+        stack.push({item: Qt.resolvedUrl(pagina + '.qml'),properties:opcions});
     }
 
     Component.onCompleted: {
         mainWindow.visible = true;
-        Storage.initDatabase();
+        dbBk.createTable('cacheData', 'id INT AUTO_INCREMENT PRIMARY KEY,instantRegistrat TEXT, categoria INT, instantDades TEXT, continguts TEXT');
+        dbBk.createTable('forms', 'id INT AUTO_INCREMENT PRIMARY KEY,titol TEXT,tipus INT, forma TEXT,contingut TEXT,termini TEXT,enviat TEXT');
     }
 }
