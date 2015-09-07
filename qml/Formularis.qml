@@ -8,7 +8,8 @@ Core.FeedView {
 
     Core.UseUnits { id: units }
 
-    anchors.fill: parent
+    signal obrePagina(string pagina, var opcions)
+
     titol: qsTr('Formularis')
     homePage: ''
     model: feedModel
@@ -29,6 +30,9 @@ Core.FeedView {
         titol: model.titol
         contingut:  '<p>' + model.titol + '</p><p>' + model.grup + '</p><p>Vàlid' + ((model.inici!=='')?(' des de ' + model.inici):'') + ((model.final!=='')?(' fins a ' + model.final):'') + '</p><p><a href="'+ model.urlAlternate + '">Emplena!</a></p>'
         enllac: urlAlternate
+
+        openExternally: false
+        onLinkActivated: feedView.obrePagina('MostraFormulari', {url: link})
     }
 
     Core.CachedModel {

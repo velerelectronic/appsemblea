@@ -6,6 +6,7 @@ import QtGraphicalEffects 1.0
 import 'qrc:///Core/core' as Core
 
 Item {
+    id: mainPage
     Core.UseUnits { id: units }
 
     signal obrePagina(string pagina,var opcions)
@@ -32,6 +33,13 @@ Item {
         leftMargin: ((contentWidth<width)?(width-contentWidth)/2:0) + anchors.margins
 
         model: VisualItemModel {
+            Core.Button {
+                id: botoTest
+                color: colorTitulars
+                text: qsTr('Test')
+                onClicked: testFeature()
+            }
+
             Core.Button {
                 id: botoActualitza
                 color: colorTitulars
@@ -65,86 +73,65 @@ Item {
         }
     }
 
+    property int margesGlobal: units.fluentMargins(width,units.nailUnit)
 
-    Flickable {
-        id: flickContents
-        anchors.top: barraBotons.bottom
-        anchors.left: parent.left
-        anchors.right: parent.right
-        anchors.bottom: parent.bottom
-        anchors.margins: units.nailUnit
+    ListView {
+        id: contentsList
+        anchors {
+            horizontalCenter: parent.horizontalCenter
+            top: barraBotons.bottom
+            bottom: parent.bottom
+            margins: units.nailUnit
+        }
+
+
+        width: Math.min(parent.width,units.maximumReadWidth) - 2 * parent.margesGlobal
         clip: true
+        orientation: ListView.Vertical
 
-        topMargin: (contentHeight>=height)?0:Math.round((height-contentHeight)/2)
+        topMargin: (contentItem.height >= height)?0:Math.round((height - contentItem.height)/2)
 
-        flickableDirection: Flickable.VerticalFlick
-        contentHeight: titularsItem.height
-        contentWidth: titularsItem.width
+        spacing: Math.round(parent.height / 20)
 
-        Rectangle {
-            id: titularsItem
+        model: VisualItemModel {
+            TitularView {
+                id: infoBloc
+                width: contentsList.width
+                marges: mainPage.margesGlobal
+                color: colorTitulars
+                model: feedModelBloc
+                etiqueta: qsTr("Informacions de l'assemblea")
+                midaTitular: units.readUnit
+                resumeix: false
+                onClicTitular: obrePagina('BlocAssemblea',{})
+            }
 
-            color: 'transparent'
-            height: childrenRect.height
-            width: flickContents.width
+            TitularView {
+                id: infoPremsa
+                width: contentsList.width
+                marges: mainPage.margesGlobal
+                color: colorTitulars
+                model: feedModelPremsa
+                etiqueta: qsTr("En els mitjans de comunicació")
+                midaTitular: units.readUnit
+                resumeix: false
+                onClicTitular: obrePagina('RecullPremsa',{})
+            }
 
-            ColumnLayout {
-                id: layoutTitulars
-                anchors.top: parent.top
-                anchors.left: parent.left
-                anchors.right: parent.right
-                height: totalHeight
-                spacing: Math.round(parent.height / 20)
-                property int margesGlobal: units.fluentMargins(width,units.nailUnit)
-                property int totalHeight: infoBloc.height + infoPremsa.height + infoAgenda.height + 2 * spacing
-
-                TitularView {
-                    id: infoBloc
-                    Layout.preferredHeight: height
-                    Layout.preferredWidth: Math.min(parent.width,units.maximumReadWidth) - 2 * layoutTitulars.margesGlobal
-                    Layout.alignment: Qt.AlignHCenter
-                    marges: layoutTitulars.margesGlobal
-                    color: colorTitulars
-                    model: feedModelBloc
-                    etiqueta: qsTr("Informacions de l'assemblea")
-                    midaTitular: units.readUnit
-                    resumeix: false
-                    onClicTitular: obrePagina('BlocAssemblea',{})
-                }
-
-                TitularView {
-                    id: infoPremsa
-                    Layout.preferredHeight: height
-                    Layout.preferredWidth: Math.min(parent.width,units.maximumReadWidth) - 2 * layoutTitulars.margesGlobal
-                    Layout.alignment: Qt.AlignHCenter
-                    marges: layoutTitulars.margesGlobal
-                    color: colorTitulars
-                    model: feedModelPremsa
-                    etiqueta: qsTr("En els mitjans de comunicació")
-                    midaTitular: units.readUnit
-                    resumeix: false
-                    onClicTitular: obrePagina('RecullPremsa',{})
-                }
-
-                TitularView {
-                    id: infoAgenda
-                    Layout.preferredHeight: height
-                    Layout.preferredWidth: Math.min(parent.width,units.maximumReadWidth) - 2 * layoutTitulars.margesGlobal
-                    Layout.alignment: Qt.AlignHCenter
-                    marges: layoutTitulars.margesGlobal
-                    color: colorTitulars
-                    model: feedModelAgenda
-                    etiqueta: qsTr("Propers esdeveniments")
-                    midaTitular: units.readUnit
-                    resumeix: false
-                    onClicTitular: obrePagina('AgendaVerda',{})
-                }
+            TitularView {
+                id: infoAgenda
+                width: contentsList.width
+                marges: mainPage.margesGlobal
+                color: colorTitulars
+                model: feedModelAgenda
+                etiqueta: qsTr("Propers esdeveniments")
+                midaTitular: units.readUnit
+                resumeix: false
+                onClicTitular: obrePagina('AgendaVerda',{})
             }
 
         }
-
     }
-
 
     Core.CachedModel {
         id: cachedModelBloc
@@ -209,6 +196,13 @@ Item {
 
         infoAgenda.carregant = true;
         cachedModelAgenda.llegeixOnline();
+    }
+
+    function testFeature() {
+        obrePagina('MostraFormulari',{url: 'https://script.google.com/macros/s/AKfycbzHwbpJ6Qvwkci2oG5cx-Kw0Vs94p3Fpnz2XL9HL6GHyYA4KBg/exec'});
+        //obrePagina('MostraFormulari',{url: 'https://script.googleusercontent.com/macros/echo?user_content_key=PxBrKXhF8w4RInN7FL-9wHK8HNUqWPq0T0Ct0xWm5kbNCbuRn0HOLodx84LU4IKOBncVsdmmO_EAlq8Vtsc2mlZg8R9hnTKRm5_BxDlH2jW0nuo2oDemN9CCS2h10ox_1xSncGQajx_ryfhECjZEnMXDmXPiSJ6jAooIJJ3Xqdx66-9mRZnellyGprim7tgpu_eV19ToCZMIBzRszd5VJdveWPraiRQB&amp;lib=Mamx1sfZKrMwcz-fUC4CiCO7HcjZDuJUr'});
+        //obrePagina('MostraFormulari',{url: 'http://assembleadocentsib.blogspot.com/feeds/posts/default'});
+        //obrePagina('MostraFormulari',{url: 'https://api.twitter.com/'});
     }
 }
 

@@ -3,26 +3,34 @@ import QtQuick.Controls 1.1
 import QtQuick.Layouts 1.1
 
 Rectangle {
+    id: mainForm
     property string title: 'Visita dels inspectors'
-    property alias inspector: fieldInspector.text
+//    property alias inspector: fieldInspector.text
+    property string version: "1.0"
+    property int fingerMeasure
+    property alias formList: formListModel
 
     property int sectionSpacing: units.fingerUnit / 2
 
     color: 'yellow'
     width: 100
-    height: childrenRect.height + 2 * units.nailUnit
+    property int requiredHeight: childrenRect.height + 2 * units.nailUnit
 
-    ColumnLayout {
-        anchors.left: parent.left
-        anchors.top: parent.top
-        anchors.right: parent.right
-        anchors.margins: units.nailUnit
-        spacing: units.nailUnit
+    ListModel {
+        ListElement {
+            caption: ''
+            explanation: ''
+            type: ''
+            variable: ''
+        }
+    }
+
+    VisualItemModel {
+        id: formListModel
 
         FormBoxColumn {
             caption: "Identificació"
-            Layout.fillWidth: true
-            Layout.preferredHeight: height
+            width: mainForm.width
 
             FormParagraph {
                 Layout.fillWidth: true
@@ -62,16 +70,12 @@ Rectangle {
             TriaCentre {
                 Layout.fillWidth: true
             }
-        }
 
-        Item {
-            height: sectionSpacing
         }
 
         FormBoxColumn {
             caption: "Data de la visita"
-            Layout.fillWidth: true
-            Layout.preferredHeight: height
+            width: mainForm.width
 
             FormParagraph {
                 text: "Quin dia ha estat la visita de l'inspector?"
@@ -82,18 +86,9 @@ Rectangle {
 
         }
 
-        Item {
-            height: sectionSpacing
-        }
-
-        ExclusiveGroup {
-            id: quiSollicita
-        }
-
         FormBoxColumn {
             caption: "Sol·licitud"
-            Layout.fillWidth: true
-            Layout.preferredHeight: height
+            width: mainForm.width
 
             FormParagraph {
                 Layout.fillWidth: true
@@ -103,6 +98,11 @@ Rectangle {
             RadioButton {
                 text: 'El mateix centre'
                 exclusiveGroup: quiSollicita
+
+                ExclusiveGroup {
+                    id: quiSollicita
+                }
+
             }
             RadioButton {
                 text: 'Inspecció'
@@ -111,15 +111,9 @@ Rectangle {
 
         }
 
-
-        Item {
-            height: sectionSpacing
-        }
-
         FormBoxColumn {
             caption: "Inspector/s"
-            Layout.fillWidth: true
-            Layout.preferredHeight: height
+            width: mainForm.width
 
             FormParagraph {
                 text: "Quins inspectors han fet la visita?"
@@ -142,26 +136,9 @@ Rectangle {
             }
         }
 
-        Text {
-            text: 'Inspector'
-        }
-        TextField {
-            id: fieldInspector
-            Layout.fillWidth: true
-        }
-
-        Text {
-            text: 'Afectats'
-        }
-
-        ExclusiveGroup {
-            id: afectats
-        }
-
         FormBoxColumn {
             caption: "Afectats"
-            Layout.fillWidth: true
-            Layout.preferredHeight: height
+            width: mainForm.width
             FormParagraph {
                 Layout.fillWidth: true
                 text: "Amb qui s'han reunit els inspectors?"
@@ -170,50 +147,22 @@ Rectangle {
                 Layout.fillWidth: true
                 text: "* En cas que hi hagi més d'un àmbit afectat, emplenau un formulari diferent per a cada un."
             }
+
+            FormParagraph {
+                Layout.fillWidth: true
+                text: "Afectats CEIP"
+            }
+
             FormBoxColumn {
                 id: afectatsCEIP
                 border.width: 0
-                RadioButton {
-                    text: 'Claustre'
-                    exclusiveGroup: afectats
-                }
-                RadioButton {
-                    text: 'Equip directiu'
-                    exclusiveGroup: afectats
-                }
-                RadioButton {
-                    text: 'Consell Escolar'
-                    exclusiveGroup: afectats
-                }
-                RadioButton {
-                    text: 'Comissió de Coordinació Pedagògica'
-                    exclusiveGroup: afectats
-                }
-                RadioButton {
-                    text: "Reunió d'àrees d'aprenentatge"
-                    exclusiveGroup: afectats
-                }
-                RadioButton {
-                    text: "Reunió de coordinació de tutors de cicle"
-                    exclusiveGroup: afectats
-                }
-                RadioButton {
-                    text: "Reunió de coordinació de mestres especialistes"
-                    exclusiveGroup: afectats
-                }
-                RadioButton {
-                    text: "Professors que apliquen TIL"
-                    exclusiveGroup: afectats
-                }
-                RadioButton {
-                    text: 'Individualment amb un docent'
-                    exclusiveGroup: afectats
-                }
-                RadioButton {
-                    text: 'Altres situacions'
-                    exclusiveGroup: afectats
-                }
             }
+
+            FormParagraph {
+                Layout.fillWidth: true
+                text: "Afectats IES"
+            }
+
             FormBoxColumn {
                 id: afectatsIES
                 border.width: 0
@@ -258,8 +207,7 @@ Rectangle {
 
         FormBoxColumn {
             caption: "Motius de la visita"
-            Layout.fillWidth: true
-            Layout.preferredHeight: gridMotius.height
+            width: mainForm.width
 
             GridLayout {
                 id: gridMotius
@@ -332,8 +280,35 @@ Rectangle {
                     Layout.fillWidth: true
                 }
             }
+        }
+    }
 
+    ColumnLayout {
+        anchors.left: parent.left
+        anchors.top: parent.top
+        anchors.right: parent.right
+        anchors.margins: units.nailUnit
+        spacing: units.nailUnit
+        height: childrenRect.height
+
+
+/*
+
+        Text {
+            text: 'Inspector'
+        }
+        TextField {
+            id: fieldInspector
+            Layout.fillWidth: true
         }
 
+        Text {
+            text: 'Afectats'
+        }
+
+
+
+        }
+*/
     }
 }

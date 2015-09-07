@@ -10,6 +10,7 @@
 #include "ClipboardAdapter/qmlclipboardadapter.h"
 #include "DatabaseBackup/databasebackup.h"
 #include "SqlTableModel/sqltablemodel.h"
+#include "DataDownloader/datadownloader.h"
 
 // #include "ios/ioscalendar.h"
 
@@ -26,6 +27,7 @@ int main(int argc, char *argv[])
 
     qmlRegisterType<DatabaseBackup>("PersonalTypes", 1, 0, "DatabaseBackup");
     qmlRegisterType<SqlTableModel>("PersonalTypes", 1, 0, "SqlTableModel");
+    qmlRegisterType<DataDownloader>("PersonalTypes", 1, 0, "DataDownloader");
 
     QString specificPath("Appsemblea");
     QDir dir(QStandardPaths::writableLocation(QStandardPaths::CacheLocation));

@@ -10,6 +10,9 @@ Rectangle {
     property string copiaTitol: titol
     property string copiaContingut: contingut
     property string copiaEnllac: enllac
+    property alias openExternally: singleItem.openExternally
+
+    signal linkActivated(string link)
 
     SingleItemView {
         id: singleItem
@@ -33,6 +36,8 @@ Rectangle {
                 shareButtons.visible = true;
             }
         }
+
+        onLinkActivated: detailDelegate.linkActivated(link)
 
         titol: detailDelegate.titol
         continguts: detailDelegate.contingut

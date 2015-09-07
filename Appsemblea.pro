@@ -5,7 +5,8 @@ QT += qml quick sql xml xmlpatterns svg
 
 SOURCES += main.cpp \
     DatabaseBackup/databasebackup.cpp \
-    SqlTableModel/sqltablemodel.cpp
+    SqlTableModel/sqltablemodel.cpp \
+    DataDownloader/datadownloader.cpp
 
 #OBJECTIVE_SOURCES += \
 #    ios/ioscalendar.mm
@@ -31,7 +32,8 @@ HEADERS += \
     qmlclipboardadapter.h \
     DatabaseBackup/databasebackup.h \
     SqlTableModel/sqltablemodel.h \
-    ClipboardAdapter/qmlclipboardadapter.h
+    ClipboardAdapter/qmlclipboardadapter.h \
+    DataDownloader/datadownloader.h
 
 ANDROID_PACKAGE_SOURCE_DIR = $$PWD/android
 
@@ -41,4 +43,7 @@ ios {
 }
 
 OBJECTIVE_SOURCES +=
+
+DISTFILES += \
+    qml/Prova.json
 

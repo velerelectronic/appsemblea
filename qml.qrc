@@ -22,16 +22,14 @@
         <file>qml/TwitterAssemblea.qml</file>
         <file>qml/BibliotecaRecursos.qml</file>
         <file>qml/Incidencies.qml</file>
-        <file>qml/ProvaMostraFormulari.qml</file>
+        <file>qml/MostraFormulari.qml</file>
         <file>qml/Prova.qml</file>
         <file>qml/TriaCentre.qml</file>
-        <file>qml/FormParagraph.qml</file>
-        <file>qml/FormSpacing.qml</file>
-        <file>qml/FormBoxColumn.qml</file>
         <file>qml/LicensePage.qml</file>
         <file>LICENSE</file>
         <file>qml/AloCamps2.qml</file>
         <file>qml/FAQ.qml</file>
+        <file>qml/ProvaFormulari.qml</file>
     </qresource>
     <qresource prefix="/Imatges">
         <file>imatges/agenda-152918.svg</file>
@@ -62,6 +60,11 @@
         <file>imatges/copyleft-38671.svg</file>
         <file>imatges/question-423604.svg</file>
         <file>imatges/questionmark-308636.svg</file>
+        <file>imatges/redo-97589.svg</file>
+        <file>imatges/erase-34105.svg</file>
+        <file>imatges/undo-97591.svg</file>
+        <file>imatges/paste-35946.svg</file>
+        <file>imatges/scissors-147115.svg</file>
     </qresource>
     <qresource prefix="/Core">
         <file>core/Button.qml</file>
@@ -77,6 +80,8 @@
         <file>core/Cached2.qml</file>
         <file>core/DetailFeedDelegate.qml</file>
         <file>core/SuperposedBox.qml</file>
+        <file>core/EditBar.qml</file>
+        <file>core/SearchBox.qml</file>
     </qresource>
     <qresource prefix="/Javascript">
         <file>javascript/Dates.js</file>

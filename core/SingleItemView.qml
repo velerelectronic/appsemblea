@@ -11,6 +11,9 @@ Flickable {
     property string copiaTitol
     property string copiaContingut
     property string copiaEnllac
+    property bool openExternally: true
+
+    signal linkActivated(string link)
 
     contentWidth: width
     contentHeight: columnaSingleItem.height
@@ -51,7 +54,12 @@ Flickable {
                 font.pixelSize: units.readUnit
                 wrapMode: Text.WrapAtWordBoundaryOrAnywhere
                 textFormat: Text.RichText
-                onLinkActivated: Qt.openUrlExternally(link)
+                onLinkActivated: {
+                    if (openExternally)
+                        Qt.openUrlExternally(link);
+                    else
+                        singleitemview.linkActivated(link);
+                }
             }
         }
     }
