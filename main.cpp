@@ -30,15 +30,16 @@ int main(int argc, char *argv[])
     qmlRegisterType<DataDownloader>("PersonalTypes", 1, 0, "DataDownloader");
 
     QString specificPath("Appsemblea");
-    QDir dir(QStandardPaths::writableLocation(QStandardPaths::CacheLocation));
-    qDebug() << dir;
+    QDir dir(QStandardPaths::writableLocation(QStandardPaths::AppDataLocation));
     if (!dir.exists(specificPath)) {
         dir.mkdir(specificPath);
     }
 
     QSqlDatabase db;
+
     if (dir.cd(specificPath)) {
         db = QSqlDatabase::addDatabase("QSQLITE");
+
         db.setDatabaseName(dir.absolutePath() + "/mainDatabase.sqlite");
         if (db.open()) {
             qDebug() << "OPENED";

@@ -1,4 +1,4 @@
-import QtQuick 2.2
+import QtQuick 2.7
 import QtQuick.XmlListModel 2.0
 import PersonalTypes 1.0
 
@@ -52,6 +52,7 @@ Item {
     */
 
     function llegeixOnline() {
+        console.log('>>> Llegeix online');
         statusCache = XmlListModel.Loading;
         var doc = new XMLHttpRequest();
         doc.onload = function(e) {
@@ -59,16 +60,22 @@ Item {
         }
 
         doc.onreadystatechange = function() {
+            console.log('>>> Canvi d\'estat');
+            console.log('source', source);
+            console.log("ready state", doc.readyState);
+            console.log("HEADERS_RECEIVED", XMLHttpRequest.HEADERS_RECEIVED);
+            console.log("DONE", XMLHttpRequest.DONE);
             if (doc.readyState === XMLHttpRequest.HEADERS_RECEIVED) {
 //                console.log("Headers -->");
 //                console.log(doc.getAllResponseHeaders());
             }
             if ((doc.readyState === XMLHttpRequest.DONE)) {
-//                console.log('Estat DONE');
-//                console.log('Status ' + doc.status + '-' + doc.statusText);
+                console.log('Estat DONE');
+                console.log('Status ' + doc.status + '-' + doc.statusText);
                 var text = doc.responseText;
-//                console.log('TEXT: ' + doc.responseText);
-//                console.log('XML: ' + doc.responseXML);
+                console.log('TEXT: ' + doc.responseText);
+                console.log('XML: ' + doc.responseXML);
+
                 if (typeFiltra) {
                     if ((text)) {
                         lastUpdate = currentTime();
