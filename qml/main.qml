@@ -24,34 +24,7 @@ Window {
     Rectangle {
         id: rectWindow
         anchors.fill: parent
-        color: 'white'
-        states: [
-            State {
-                name: 'complet'
-                PropertyChanges {
-                    target: rectWindow
-                    opacity: 1.0
-                }
-            },
-            State {
-                name: 'inicial'
-                PropertyChanges {
-                    target: rectWindow
-                    opacity: 0.0
-                }
-            }
-        ]
-        state: 'complet'
-
-        transitions: [
-            Transition {
-                PropertyAnimation {
-                    properties: 'opacity'
-                    easing.type: Easing.InOutQuad
-                    duration: 500
-                }
-            }
-        ]
+        color: '#EEEEEE'
 
         Keys.onPressed: {
             if (event.key == Qt.Key_Back) {
@@ -81,7 +54,6 @@ Window {
 
             Stack.onStatusChanged: {
                 if (Stack.status == Stack.Active) {
-                    rectWindow.state = 'complet';
                     progressAnimation.stop();
                     if (typeof(stack.currentItem.showMainBar) != 'undefined')
                         showMainBar = stack.currentItem.showMainBar;
@@ -192,6 +164,10 @@ Window {
 
     Component.onCompleted: {
         mainWindow.visible = true;
+//        dbBk.dropTable('feedPosts');
+//        dbBk.dropTable('feeds');
+        dbBk.createTable('feeds', 'id INTEGER PRIMARY KEY, source TEXT, name TEXT, title TEXT, subtitle TEXT, permalink TEXT, updated TEXT, categories TEXT');
+        dbBk.createTable('feedPosts', 'id INTEGER PRIMARY KEY, feed INT, title TEXT, content TEXT, published TEXT, updated TEXT, author TEXT, permalink TEXT, saved INTEGER, FOREIGN KEY(feed) REFERENCES feeds(id) ON DELETE CASCADE');
         dbBk.createTable('cacheData', 'id INT AUTO_INCREMENT PRIMARY KEY,instantRegistrat TEXT, categoria INT, instantDades TEXT, continguts TEXT');
         dbBk.createTable('forms', 'id INT AUTO_INCREMENT PRIMARY KEY,titol TEXT,tipus INT, forma TEXT,contingut TEXT,termini TEXT,enviat TEXT');
     }

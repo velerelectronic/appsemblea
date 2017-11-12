@@ -82,6 +82,7 @@
         <file>core/SuperposedBox.qml</file>
         <file>core/EditBar.qml</file>
         <file>core/SearchBox.qml</file>
+        <file>core/FeedModel.qml</file>
     </qresource>
     <qresource prefix="/Javascript">
         <file>javascript/Dates.js</file>

@@ -1,9 +1,10 @@
-import QtQuick 2.2
+import QtQuick 2.6
 import QtQuick.Window 2.1
 import QtQuick.Layouts 1.1
 import QtQuick.XmlListModel 2.0
 import QtGraphicalEffects 1.0
 import 'qrc:///Core/core' as Core
+import PersonalTypes 1.0
 
 Item {
     id: mainPage
@@ -75,127 +76,222 @@ Item {
 
     property int margesGlobal: units.fluentMargins(width,units.nailUnit)
 
+    property bool isVertical: width < height
+    property bool isHorizontal: !isVertical
+
     ListView {
         id: contentsList
+
         anchors {
-            horizontalCenter: parent.horizontalCenter
             top: barraBotons.bottom
             bottom: parent.bottom
-            margins: units.nailUnit
+
+            horizontalCenter: parent.horizontalCenter
         }
+        width: Math.min(parent.width - 2 * units.nailUnit, parent.width * 0.8)
 
-
-        width: Math.min(parent.width,units.maximumReadWidth) - 2 * parent.margesGlobal
         clip: true
-        orientation: ListView.Vertical
+        model: feedModel.postsModel
 
-        topMargin: (contentItem.height >= height)?0:Math.round((height - contentItem.height)/2)
+        spacing: units.fingerUnit
 
-        spacing: Math.round(parent.height / 20)
+        delegate: Rectangle {
+            border.color: 'black'
 
-        model: VisualItemModel {
-            TitularView {
-                id: infoBloc
-                width: contentsList.width
-                marges: mainPage.margesGlobal
-                color: colorTitulars
-                model: feedModelBloc
-                etiqueta: qsTr("Informacions de l'assemblea")
-                midaTitular: units.readUnit
-                resumeix: false
-                onClicTitular: obrePagina('BlocAssemblea',{})
+            color: (ListView.isCurrentItem)?'yellow':'white'
+
+            width: contentsList.width
+            height: units.fingerUnit * 2
+            Text {
+                anchors.fill: parent
+                anchors.margins: units.nailUnit
+                font.pixelSize: units.readUnit
+                wrapMode: Text.WrapAtWordBoundaryOrAnywhere
+                verticalAlignment: Text.AlignVCenter
+                elide: Text.ElideRight
+                text: model.title
+            }
+            MouseArea {
+                anchors.fill: parent
+                onClicked: {
+                    contentsList.currentIndex = model.index;
+                    contentPanel.openPost(model.title, model.content, model.permalink, model.updated)
+                }
+            }
+        }
+    }
+
+    Rectangle {
+        id: contentPanel
+
+        property string title: ''
+        property string content: ''
+        property string permalink: ''
+        property string updated: ''
+
+        states: [
+            State {
+                name: 'minimized'
+                PropertyChanges {
+                    target: contentPanel
+                    width: (mainPage.isVertical)?contentPanel.parent.width:(units.fingerUnit * 2)
+                    height: (mainPage.isHorizontal)?contentPanel.parent.height:(units.fingerUnit * 2)
+                }
+            },
+            State {
+                name: 'maximized'
+                PropertyChanges {
+                    target: contentPanel
+                    width: contentPanel.parent.width
+                    height: contentPanel.parent.height
+                }
+            },
+            State {
+                name: 'split'
+                PropertyChanges {
+                    target: contentPanel
+                    width: (mainPage.isVertical)?contentPanel.parent.width:(contentPanel.parent.width / 2)
+                    height: (mainPage.isHorizontal)?contentPanel.parent.height:(contentPanel.parent.height / 2)
+                }
+            }
+        ]
+
+        state: 'minimized'
+
+        transitions: [
+            Transition {
+                NumberAnimation {
+                    properties: 'width, height'
+                    duration: 250
+                }
+            }
+        ]
+        anchors {
+            bottom: parent.bottom
+            right: parent.right
+        }
+        border.color: 'black'
+
+        MouseArea {
+            anchors.fill: parent
+            onPressed: mouse.accepted = true
+        }
+
+        ColumnLayout {
+            anchors.fill: parent
+            anchors.margins: parent.border.width
+            spacing: 0
+
+            Rectangle {
+                Layout.fillWidth: true
+                Layout.preferredHeight: titleText.contentHeight + titleText.padding * 2
+                color: '#AAFFAA'
+
+                MouseArea {
+                    anchors.fill: parent
+                    onClicked: {
+                        contentPanel.openPost();
+                    }
+                }
+
+                RowLayout {
+                    anchors.fill: parent
+                    spacing: units.fingerUnit
+
+                    Text {
+                        id: titleText
+
+                        Layout.fillHeight: true
+                        Layout.fillWidth: true
+                        padding: units.fingerUnit
+
+                        wrapMode: Text.WrapAtWordBoundaryOrAnywhere
+                        font.pixelSize: units.readUnit
+                        font.bold: true
+
+                        text: contentPanel.title
+                    }
+
+                    Core.Button {
+                        Layout.alignment: Text.AlignTop
+                        Layout.preferredHeight: units.fingerUnit
+                        visible: (contentPanel.state !== 'minimized')
+                        color: colorTitulars
+                        text: qsTr('Tanca')
+                        onClicked: contentPanel.state = 'minimized'
+                    }
+
+                }
+
             }
 
-            TitularView {
-                id: infoPremsa
-                width: contentsList.width
-                marges: mainPage.margesGlobal
-                color: colorTitulars
-                model: feedModelPremsa
-                etiqueta: qsTr("En els mitjans de comunicació")
-                midaTitular: units.readUnit
-                resumeix: false
-                onClicTitular: obrePagina('RecullPremsa',{})
+            Rectangle {
+                Layout.fillWidth: true
+                Layout.preferredHeight: units.fingerUnit
+                Text {
+                    anchors.fill: parent
+                    padding: units.nailUnit
+
+                    font.pixelSize: units.readUnit
+                    color: 'gray'
+                    text: qsTr('Actualitzat: ') + contentPanel.updated
+                }
             }
 
-            TitularView {
-                id: infoAgenda
-                width: contentsList.width
-                marges: mainPage.margesGlobal
-                color: colorTitulars
-                model: feedModelAgenda
-                etiqueta: qsTr("Propers esdeveniments")
-                midaTitular: units.readUnit
-                resumeix: false
-                onClicTitular: obrePagina('AgendaVerda',{})
+            Flickable {
+                id: flickArea
+
+                Layout.fillHeight: true
+                Layout.fillWidth: true
+
+                contentWidth: flickText.contentWidth
+                contentHeight: flickText.height + flickText.padding * 2
+                clip: true
+
+                Text {
+                    id: flickText
+
+                    width: flickArea.width
+                    height: contentHeight
+                    padding: units.fingerUnit
+
+                    wrapMode: Text.WrapAtWordBoundaryOrAnywhere
+                    font.pixelSize: units.readUnit
+                    text: contentPanel.content
+
+                    onLinkActivated: Qt.openUrlExternally(link)
+                }
             }
+        }
 
+
+        function openPost(title, content, permalink, updated) {
+            if (typeof title !== 'undefined') {
+                state = 'split';
+                contentPanel.title = title;
+                contentPanel.content = content;
+                contentPanel.permalink = permalink;
+                contentPanel.updated = updated;
+            } else {
+                if (contentPanel.title !== '') {
+                    switch(contentPanel.state) {
+                    case 'minimized':
+                        contentPanel.state = 'split';
+                        break;
+                    case 'split':
+                        contentPanel.state = 'maximized';
+                        break;
+                    case 'maximized':
+                        contentPanel.state = 'split';
+                        break;
+                    }
+                }
+            }
         }
     }
 
-    Core.CachedModel {
-        id: cachedModelBloc
-        source: 'http://assembleadocentsib.blogspot.com/feeds/posts/default'
-        categoria: 'blocAssemblea'
-        typeFiltra: false
-        onOnlineDataLoaded: infoBloc.carregant = false;
-
-        XmlListModel {
-            id: feedModelBloc
-            query: '/feed/entry[1]'
-            namespaceDeclarations: "declare default element namespace 'http://www.w3.org/2005/Atom';"
-            xml: cachedModelBloc.contents
-
-            XmlRole { name: 'titol'; query: 'title/string()' }
-            XmlRole { name: 'altres'; query: 'published/substring-before(string(),"T")' }
-        }
-    }
-
-    Core.CachedModel {
-        id: cachedModelPremsa
-        source: 'https://script.google.com/macros/s/AKfycby9ntz2iJ9hhQ5hB2-wktnlxJjBDsHY7YyBF4Mpj3LzGPBmJvGc/exec'
-        categoria: 'recullPremsa'
-        typeFiltra: true
-
-        XmlListModel {
-            id: feedModelPremsa
-            query: '//feed/entry[1]'
-            xml: cachedModelPremsa.contents
-
-            XmlRole { name: 'titol'; query: "concat(title/string(), ' (', source/string(),'-',author/string(),')')" }
-            XmlRole { name: 'altres'; query: "concat(td[1]/string(),' ', td[2]/string())" }
-        }
-
-        onOnlineDataLoaded: infoPremsa.carregant = false;
-    }
-
-    Core.CachedModel {
-        id: cachedModelAgenda
-        source: 'http://www.agendaverdadocents.cat/esdeveniments/feed/'
-        categoria: 'agendaVerda'
-        typeFiltra: false
-
-        XmlListModel {
-            id: feedModelAgenda
-            query: '/rss/channel/item[1]'
-            xml: cachedModelAgenda.contents
-
-            XmlRole { name: 'titol'; query: 'title/string()' }
-            XmlRole { name: 'altres'; query: 'pubDate/string()' }
-        }
-
-        onOnlineDataLoaded: infoAgenda.carregant = false;
-    }
-
-    function llegeixFeeds() {
-        infoBloc.carregant = true;
-        cachedModelBloc.llegeixOnline();
-
-        infoPremsa.carregant = true;
-        cachedModelPremsa.llegeixOnline();
-
-        infoAgenda.carregant = true;
-        cachedModelAgenda.llegeixOnline();
+    Core.FeedModel {
+        id: feedModel
     }
 
     function testFeature() {
