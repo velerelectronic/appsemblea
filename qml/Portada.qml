@@ -17,6 +17,8 @@ Item {
 
 //    color: 'white'
 
+    property int minimumOuterMargin: units.nailUnit
+
     ListView {
         id: barraBotons
         anchors {
@@ -74,221 +76,305 @@ Item {
         }
     }
 
-    property int margesGlobal: units.fluentMargins(width,units.nailUnit)
-
-    property bool isVertical: width < height
-    property bool isHorizontal: !isVertical
-
-    ListView {
-        id: contentsList
+    Item {
+        id: twoPanelsPlace
 
         anchors {
             top: barraBotons.bottom
+            left: parent.left
+            right: parent.right
             bottom: parent.bottom
-
-            horizontalCenter: parent.horizontalCenter
+            leftMargin: twoPanelsPlace.horizontalMargins
+            rightMargin: twoPanelsPlace.horizontalMargins
+            topMargin: twoPanelsPlace.verticalMargins
+            bottomMargin: twoPanelsPlace.verticalMargins
         }
-        width: Math.min(parent.width - 2 * units.nailUnit, parent.width * 0.8)
 
-        clip: true
-        model: feedModel.postsModel
+        property int horizontalMargins: Math.max(units.nailUnit, parent.width * 0.1)
+        property int verticalMargins: 0
+        property int panelWidth: (isVertical)?twoPanelsPlace.width:Math.min(twoPanelsPlace.width * 0.8, twoPanelsPlace.width)
 
-        spacing: units.fingerUnit
-
-        delegate: Rectangle {
-            border.color: 'black'
-
-            color: (ListView.isCurrentItem)?'yellow':'white'
-
-            width: contentsList.width
-            height: units.fingerUnit * 2
-            Text {
-                anchors.fill: parent
-                anchors.margins: units.nailUnit
-                font.pixelSize: units.readUnit
-                wrapMode: Text.WrapAtWordBoundaryOrAnywhere
-                verticalAlignment: Text.AlignVCenter
-                elide: Text.ElideRight
-                text: model.title
-            }
-            MouseArea {
-                anchors.fill: parent
-                onClicked: {
-                    contentsList.currentIndex = model.index;
-                    contentPanel.openPost(model.title, model.content, model.permalink, model.updated)
-                }
-            }
-        }
-    }
-
-    Rectangle {
-        id: contentPanel
-
-        property string title: ''
-        property string content: ''
-        property string permalink: ''
-        property string updated: ''
+        // REEVIEW here
+        property int panelHeight: (isHorizontal)?twoPanelsPlace.height:Math.min(twoPanelsPlace.height * 0.8, twoPanelsPlace.height)
+        ///
 
         states: [
             State {
-                name: 'minimized'
+                name: 'onlyFeeds'
+
+                // Feed list in the middle of the screen, no posts panel
+
                 PropertyChanges {
-                    target: contentPanel
-                    width: (mainPage.isVertical)?contentPanel.parent.width:(units.fingerUnit * 2)
-                    height: (mainPage.isHorizontal)?contentPanel.parent.height:(units.fingerUnit * 2)
+                    target: feedsList
+                    width: twoPanelsPlace.panelWidth
+                }
+                PropertyChanges {
+                    target: postPanel
+                    visible: false
+                }
+                AnchorChanges {
+                    target: feedsList
+                    anchors.top: twoPanelsPlace.top
+                    anchors.bottom: twoPanelsPlace.bottom
+                    anchors.horizontalCenter: twoPanelsPlace.horizontalCenter
+                }
+
+                AnchorChanges {
+                    target: postPanel
+                    anchors.left: twoPanelsPlace.left
+                    anchors.top: twoPanelsPlace.top
                 }
             },
             State {
-                name: 'maximized'
-                PropertyChanges {
-                    target: contentPanel
-                    width: contentPanel.parent.width
-                    height: contentPanel.parent.height
+                name: 'splitWithFeeds'
+
+                AnchorChanges {
+                    target: feedsList
+                    anchors.left: (isVertical)?undefined:twoPanelsPlace.left
+                    anchors.top: (isHorizontal)?undefined:twoPanelsPlace.top
+                    anchors.horizontalCenter: (isVertical)?twoPanelsPlace.horizontalCenter:undefined
+                    anchors.verticalCenter: (isHorizontal)?twoPanelsPlace.verticalCenter:undefined
                 }
+                AnchorChanges {
+                    target: postPanel
+                    anchors.left: (isVertical)?undefined:feedsList.right
+                    anchors.top: (isHorizontal)?undefined:bottomSpaceItem.top
+                    anchors.horizontalCenter: (isVertical)?twoPanelsPlace.horizontalCenter:undefined
+                    anchors.verticalCenter: (isHorizontal)?twoPanelsPlace.verticalCenter:undefined
+                }
+
             },
             State {
-                name: 'split'
-                PropertyChanges {
-                    target: contentPanel
-                    width: (mainPage.isVertical)?contentPanel.parent.width:(contentPanel.parent.width / 2)
-                    height: (mainPage.isHorizontal)?contentPanel.parent.height:(contentPanel.parent.height / 2)
+                name: 'splitWithPost'
+
+                AnchorChanges {
+                    target: feedsList
+
+                    anchors.left: (isVertical)?undefined:twoPanelsPlace.left
+                    anchors.top: (isHorizontal)?undefined:twoPanelsPlace.top
+                    anchors.horizontalCenter: (isVertical)?twoPanelsPlace.horizontalCenter:undefined
+                    anchors.verticalCenter: (isHorizontal)?twoPanelsPlace.verticalCenter:undefined
+                }
+
+                AnchorChanges {
+                    target: postPanel
+
+                    anchors.right: (isVertical)?undefined:twoPanelsPlace.right
+                    anchors.bottom: (isHorizontal)?undefined:twoPanelsPlace.bottom
+                    anchors.horizontalCenter: (isVertical)?twoPanelsPlace.horizontalCenter:undefined
+                    anchors.verticalCenter: (isHorizontal)?twoPanelsPlace.verticalCenter:undefined
                 }
             }
+
         ]
 
-        state: 'minimized'
+        state: 'onlyFeeds'
 
         transitions: [
             Transition {
-                NumberAnimation {
-                    properties: 'width, height'
+                AnchorAnimation {
                     duration: 250
                 }
             }
         ]
-        anchors {
-            bottom: parent.bottom
-            right: parent.right
-        }
-        border.color: 'black'
 
-        MouseArea {
-            anchors.fill: parent
-            onPressed: mouse.accepted = true
-        }
+        ListView {
+            id: feedsList
 
-        ColumnLayout {
-            anchors.fill: parent
-            anchors.margins: parent.border.width
-            spacing: 0
+            clip: true
+            model: feedModel.postsModel
 
-            Rectangle {
-                Layout.fillWidth: true
-                Layout.preferredHeight: titleText.contentHeight + titleText.padding * 2
-                color: '#AAFFAA'
+            spacing: units.fingerUnit
 
+            width: twoPanelsPlace.panelWidth
+            height: twoPanelsPlace.panelHeight
+
+            delegate: Rectangle {
+                border.color: 'black'
+
+                color: (ListView.isCurrentItem)?'yellow':'white'
+
+                width: feedsList.width
+                height: units.fingerUnit * 2
+                Text {
+                    anchors.fill: parent
+                    anchors.margins: units.nailUnit
+                    font.pixelSize: units.readUnit
+                    wrapMode: Text.WrapAtWordBoundaryOrAnywhere
+                    verticalAlignment: Text.AlignVCenter
+                    elide: Text.ElideRight
+                    text: model.title
+                }
                 MouseArea {
                     anchors.fill: parent
                     onClicked: {
-                        contentPanel.openPost();
+                        feedsList.currentIndex = model.index;
+                        twoPanelsPlace.openPost(model.title, model.content, model.permalink, model.updated)
+                    }
+                }
+            }
+
+            bottomMargin: units.fingerUnit
+        }
+
+        Rectangle {
+            id: postPanel
+
+            property string title: ''
+            property string content: ''
+            property string permalink: ''
+            property string updated: ''
+
+            width: twoPanelsPlace.panelWidth
+            height: twoPanelsPlace.panelHeight
+
+            transitions: [
+                Transition {
+                    AnchorAnimation {
+                        duration: 250
+                    }
+                }
+            ]
+            border.color: 'black'
+
+            MouseArea {
+                anchors.fill: parent
+                onPressed: mouse.accepted = true
+            }
+
+            ColumnLayout {
+                anchors.fill: parent
+                anchors.margins: parent.border.width
+                spacing: 0
+
+                Rectangle {
+                    Layout.fillWidth: true
+                    Layout.preferredHeight: titleText.contentHeight + titleText.padding * 2
+                    color: '#AAFFAA'
+
+                    MouseArea {
+                        anchors.fill: parent
+                        onClicked: {
+                            twoPanelsPlace.openPost();
+                        }
+                    }
+
+                    RowLayout {
+                        anchors.fill: parent
+                        spacing: units.fingerUnit
+
+                        Text {
+                            id: titleText
+
+                            Layout.fillHeight: true
+                            Layout.fillWidth: true
+                            padding: units.fingerUnit
+
+                            wrapMode: Text.WrapAtWordBoundaryOrAnywhere
+                            font.pixelSize: units.readUnit
+                            font.bold: true
+
+                            text: postPanel.title
+                        }
+
+                        Core.Button {
+                            Layout.alignment: Text.AlignTop
+                            Layout.preferredHeight: units.fingerUnit
+                            visible: (twoPanelsPlace.state !== 'onlyFeeds')
+                            color: colorTitulars
+                            text: qsTr('Tanca')
+                            onClicked: twoPanelsPlace.state = 'onlyFeeds'
+                        }
+
+                    }
+
+                }
+
+                Rectangle {
+                    Layout.fillWidth: true
+                    Layout.preferredHeight: units.fingerUnit
+                    Text {
+                        anchors.fill: parent
+                        padding: units.nailUnit
+
+                        font.pixelSize: units.readUnit
+                        color: 'gray'
+                        text: qsTr('Actualitzat: ') + postPanel.updated
                     }
                 }
 
-                RowLayout {
-                    anchors.fill: parent
-                    spacing: units.fingerUnit
+                Flickable {
+                    id: flickArea
+
+                    Layout.fillHeight: true
+                    Layout.fillWidth: true
+
+                    contentWidth: flickText.contentWidth
+                    contentHeight: flickText.height + flickText.padding * 2
+                    clip: true
 
                     Text {
-                        id: titleText
+                        id: flickText
 
-                        Layout.fillHeight: true
-                        Layout.fillWidth: true
+                        width: flickArea.width
+                        height: contentHeight
                         padding: units.fingerUnit
 
                         wrapMode: Text.WrapAtWordBoundaryOrAnywhere
                         font.pixelSize: units.readUnit
-                        font.bold: true
+                        text: postPanel.content
 
-                        text: contentPanel.title
+                        onLinkActivated: Qt.openUrlExternally(link)
                     }
-
-                    Core.Button {
-                        Layout.alignment: Text.AlignTop
-                        Layout.preferredHeight: units.fingerUnit
-                        visible: (contentPanel.state !== 'minimized')
-                        color: colorTitulars
-                        text: qsTr('Tanca')
-                        onClicked: contentPanel.state = 'minimized'
-                    }
-
-                }
-
-            }
-
-            Rectangle {
-                Layout.fillWidth: true
-                Layout.preferredHeight: units.fingerUnit
-                Text {
-                    anchors.fill: parent
-                    padding: units.nailUnit
-
-                    font.pixelSize: units.readUnit
-                    color: 'gray'
-                    text: qsTr('Actualitzat: ') + contentPanel.updated
-                }
-            }
-
-            Flickable {
-                id: flickArea
-
-                Layout.fillHeight: true
-                Layout.fillWidth: true
-
-                contentWidth: flickText.contentWidth
-                contentHeight: flickText.height + flickText.padding * 2
-                clip: true
-
-                Text {
-                    id: flickText
-
-                    width: flickArea.width
-                    height: contentHeight
-                    padding: units.fingerUnit
-
-                    wrapMode: Text.WrapAtWordBoundaryOrAnywhere
-                    font.pixelSize: units.readUnit
-                    text: contentPanel.content
-
-                    onLinkActivated: Qt.openUrlExternally(link)
                 }
             }
         }
 
+        Item {
+            id: bottomSpaceItem
+
+            // Item to leave space for post panel when minimized
+            anchors {
+                bottom: parent.bottom
+                left: parent.left
+                right: parent.right
+            }
+            height: units.fingerUnit * 2
+        }
 
         function openPost(title, content, permalink, updated) {
             if (typeof title !== 'undefined') {
-                state = 'split';
-                contentPanel.title = title;
-                contentPanel.content = content;
-                contentPanel.permalink = permalink;
-                contentPanel.updated = updated;
+                state = 'splitWithPost';
+                postPanel.title = title;
+                postPanel.content = content;
+                postPanel.permalink = permalink;
+                postPanel.updated = updated;
             } else {
-                if (contentPanel.title !== '') {
-                    switch(contentPanel.state) {
-                    case 'minimized':
-                        contentPanel.state = 'split';
+                if (postPanel.title !== '') {
+                    switch(state) {
+                    case 'onlyFeeds':
+                        state = 'splitWithPost';
                         break;
-                    case 'split':
-                        contentPanel.state = 'maximized';
+                    case 'splitWithPost':
+                        state = 'splitWithFeeds';
                         break;
-                    case 'maximized':
-                        contentPanel.state = 'split';
+                    case 'splitWithFeeds':
+                        state = 'splitWithPost';
                         break;
                     }
                 }
             }
         }
+
     }
+
+
+    property int margesGlobal: units.fluentMargins(width,units.nailUnit)
+
+    property bool isVertical: twoPanelsPlace.width < twoPanelsPlace.height
+    property bool isHorizontal: !isVertical
+
+
 
     Core.FeedModel {
         id: feedModel
