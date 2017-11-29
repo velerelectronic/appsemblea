@@ -24,7 +24,7 @@ Window {
     Rectangle {
         id: rectWindow
         anchors.fill: parent
-        color: '#EEEEEE'
+        color: '#E0F8E0'
 
         Keys.onPressed: {
             if (event.key == Qt.Key_Back) {
@@ -41,7 +41,7 @@ Window {
             id: imatgeFons
             anchors.fill: parent
             anchors.topMargin: units.fingerUnit + 2 * units.nailUnit
-            source: 'qrc:///Imatges/imatges/Logo assemblea docents.png'
+            source: 'qrc:///Imatges/imatges/Logo assemblea docents (transparent bg).png'
             fillMode: Image.PreserveAspectFit
             smooth: true
             opacity: 0.5

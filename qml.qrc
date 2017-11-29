@@ -65,6 +65,8 @@
         <file>imatges/undo-97591.svg</file>
         <file>imatges/paste-35946.svg</file>
         <file>imatges/scissors-147115.svg</file>
+        <file>imatges/Logo assemblea docents (transparent bg).png</file>
+        <file>imatges/the-ribbon-287142.svg</file>
     </qresource>
     <qresource prefix="/Core">
         <file>core/Button.qml</file>

@@ -3,8 +3,11 @@ import QtQuick.Window 2.1
 import QtQuick.Layouts 1.1
 import QtQuick.XmlListModel 2.0
 import QtGraphicalEffects 1.0
+import QtQuick.Dialogs 1.2
 import 'qrc:///Core/core' as Core
+
 import PersonalTypes 1.0
+import tipuspersonals 1.0
 
 Item {
     id: mainPage
@@ -47,7 +50,7 @@ Item {
                 id: botoActualitza
                 color: colorTitulars
                 text: qsTr('Actualitza')
-                onClicked: llegeixFeeds()
+                onClicked: feedModel.reloadContents()
             }
             Core.Button {
                 id: botoDirectori
@@ -195,14 +198,26 @@ Item {
                 color: (ListView.isCurrentItem)?'yellow':'white'
 
                 width: feedsList.width
-                height: units.fingerUnit * 2
+                height: postTitleText.height + units.nailUnit * 4
+
                 Text {
-                    anchors.fill: parent
-                    anchors.margins: units.nailUnit
+                    id: postTitleText
+
+                    anchors {
+                        top: parent.top
+                        left: parent.left
+                        right: parent.right
+                    }
+                    anchors.margins: units.nailUnit * 2
+                    height: contentHeight
+
                     font.pixelSize: units.readUnit
                     wrapMode: Text.WrapAtWordBoundaryOrAnywhere
-                    verticalAlignment: Text.AlignVCenter
-                    elide: Text.ElideRight
+                    //verticalAlignment: Text.AlignVCenter
+                    maximumLineCount: 3
+                    //elide: Text.ElideRight
+
+                    textFormat: Text.PlainText
                     text: model.title
                 }
                 MouseArea {
@@ -328,6 +343,106 @@ Item {
                     }
                 }
             }
+            Flow {
+                id: buttonsRow
+
+                anchors {
+                    bottom: postPanel.bottom
+                    left: postPanel.left
+                    right: postPanel.right
+                    margins: units.fingerUnit
+                }
+                height: childrenRect.height + units.fingerUnit
+
+                spacing: units.fingerUnit
+
+                /*
+                Core.Button {
+                    id: botoObreCalendari
+                    Layout.preferredWidth: parent.width
+                    Layout.preferredHeight: units.fingerUnit
+                    available: true
+                    color: 'white'
+                    text: qsTr('Calendari')
+                    onClicked: Qt.openUrlExternally('calshow://')
+                }
+                */
+
+                Core.Button {
+                    id: shareFB
+
+                    color: '#0040FF'
+                    textColor: 'white'
+                    text: qsTr('Facebook')
+                    onClicked: {
+                        Qt.openUrlExternally('https://www.facebook.com/sharer/sharer.php?u=' + encodeURIComponent(postPanel.permalink));
+                    }
+                }
+
+                Core.Button {
+                    id: shareTwitter
+
+                    color: '#2ECCFA'
+                    text: qsTr('Twitter')
+                    onClicked: Qt.openUrlExternally('http://twitter.com/intent/tweet?text=' + postPanel.title + '%20' + encodeURIComponent(postPanel.permalink) + '&url=undefined')
+                }
+                Core.Button {
+                    id: shareGPlus
+
+                    color: '#FE2E2E'
+                    textColor: 'white'
+                    text: qsTr('Google Plus')
+                    onClicked: Qt.openUrlExternally('https://plus.google.com/share?url=' + postPanel.permalink)
+                }
+
+                Core.Button {
+                    id: botoObreExtern
+
+                    color: 'white'
+                    text: qsTr('Obre extern')
+                    onClicked: Qt.openUrlExternally(postPanel.permalink)
+                }
+
+                Core.Button {
+                    id: botoCopiaTitol
+
+                    color: 'white'
+                    text: qsTr('Copia títol')
+                    onClicked: {
+                        clipboard.copia(postPanel.title);
+                        infoMessage.mostraInfo(qsTr("S'ha copiat el títol al portapapers."));
+                    }
+                }
+                Core.Button {
+                    id: botoCopiaContingut
+
+                    color: 'white'
+                    text: qsTr('Copia contingut')
+                    onClicked: {
+                        clipboard.copia(postPanel.content);
+                        infoMessage.mostraInfo(qsTr("S'han copiat els continguts al portapapers."));
+                    }
+                }
+                Core.Button {
+                    id: botoCopiaEnllac
+
+                    color: 'white'
+                    text: qsTr('Copia enllaç')
+                    onClicked: {
+                        clipboard.copia(postPanel.permalink);
+                        infoMessage.mostraInfo(qsTr("S'ha copiat l'enllaç al portapapers."));
+                    }
+                }
+                Core.Button {
+                    id: botoEnviaMail
+
+                    color: 'white'
+                    text: qsTr('Envia per correu')
+                    onClicked: {
+                        Qt.openUrlExternally('mailto:?subject=' + encodeURIComponent('[Appsemblea] ' +postPanel.title) + '&body=' + encodeURIComponent(postPanel.permalink));
+                    }
+                }
+            }
         }
 
         Item {
@@ -379,6 +494,20 @@ Item {
     Core.FeedModel {
         id: feedModel
     }
+
+    MessageDialog {
+        id: infoMessage
+        visible: false
+        standardButtons: StandardButton.Ok
+        onAccepted: visible = false
+
+        function mostraInfo(text) {
+            informativeText = text;
+            visible = true;
+        }
+    }
+
+    QClipboard { id: clipboard }
 
     function testFeature() {
         obrePagina('MostraFormulari',{url: 'https://script.google.com/macros/s/AKfycbzHwbpJ6Qvwkci2oG5cx-Kw0Vs94p3Fpnz2XL9HL6GHyYA4KBg/exec'});

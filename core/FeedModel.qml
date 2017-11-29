@@ -136,11 +136,17 @@ Item {
     }
 
     Timer {
+        id: loadingTimer
+
         running: true
         interval: 1000 * 60
         repeat: true
         triggeredOnStart: true
 
         onTriggered: downloadData()
+    }
+
+    function reloadContents() {
+        loadingTimer.restart();
     }
 }
